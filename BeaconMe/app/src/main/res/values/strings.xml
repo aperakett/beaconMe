@@ -5,4 +5,9 @@
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
 
+    // Strings used by the scanner service
+    <string name="btle_not_supported">Bluetooth Low Energy is not supported!</string>
+    <string name="bt_not_supported">Bluetooth is not supported!</string>
+
+
 </resources>

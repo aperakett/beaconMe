@@ -1,17 +1,42 @@
 package no.uit.ods.beaconme;
 
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
+import android.os.IBinder;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+
 
 public class MainActivity extends ActionBarActivity {
+    public LeScannerService mService;
+    public boolean mBound = false;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        Log.i("Main", "onCreate()");
+
+        // Bind service, binds the service so it's reachable from different classes
+        Intent intent = new Intent(this, LeScannerService.class);
+        bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+        startService(intent);
+
+        // start the scan schedule
+        schedulePeriodicalScan();
+
     }
 
 
@@ -36,4 +61,44 @@ public class MainActivity extends ActionBarActivity {
 
         return super.onOptionsItemSelected(item);
     }
+
+    /** Defines callbacks for service binding, passed to bindService() */
+    private ServiceConnection mConnection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName className,
+                                       IBinder service) {
+            // We've bound to LocalService, cast the IBinder and get LocalService instance
+            LeScannerService.LocalBinder binder = (LeScannerService.LocalBinder) service;
+            mService = binder.getService();
+            mBound = true;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName arg0) {
+            mBound = false;
+        }
+    };
+
+
+    // Schedules periodical BTLE scan
+    public void schedulePeriodicalScan () {
+Log.i("Main", "schedulePeriodicalScan()");
+        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+        final Runnable scan = new Runnable() {
+            @Override
+            public void run() {
+                mService.scan();
+            }
+        };
+
+        final ScheduledFuture scannerHandle = scheduler.scheduleAtFixedRate(scan, 2500, 2500, TimeUnit.MILLISECONDS);
+        scheduler.schedule(new Runnable() {
+            @Override
+            public void run() {
+                scannerHandle.cancel(false);
+            }
+        }, 60 * 60, TimeUnit.SECONDS);
+    }
+
 }
