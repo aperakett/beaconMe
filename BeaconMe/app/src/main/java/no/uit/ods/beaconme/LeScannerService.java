@@ -15,11 +15,19 @@ import android.util.Log;
 import android.widget.BaseAdapter;
 import android.widget.Toast;
 
-
+/*
+ *  Author: Espen Mæland Wilhelmsen, espen.wilhelmsen@gmail.com
+ *
+ *  This class implements a scanner service that maintains a list of
+ *  nearby beacons in a LeDeviceList class list.
+ *
+ *  The class checks for both BT and BTLE support
+ */
 public class LeScannerService extends Service {
     private Handler handler;
     private BluetoothAdapter btAdapter;
-    private LeDeviceList btleDeviceList;
+    private LeBeaconList btleDeviceList;
+    public LeAssociationList associationList;
 
     //TODO implement as list (mAdapter)
     private BaseAdapter mAdapter;
@@ -49,7 +57,7 @@ public class LeScannerService extends Service {
         return mBinder;
     }
 
-    // TODO: implement new class to store RSSI and pherhaps scanrecord
+    // Scan callback- interface, stores the beacons in the list
     private BluetoothAdapter.LeScanCallback btleScanCallback =
             new BluetoothAdapter.LeScanCallback() {
                 @Override
@@ -58,6 +66,7 @@ public class LeScannerService extends Service {
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
+
                             btleDeviceList.addDevice(beacon);
                             if (mAdapter != null)
                                 mAdapter.notifyDataSetChanged();
@@ -68,9 +77,10 @@ public class LeScannerService extends Service {
 
             };
 
-
+    // Constructor method.
     public LeScannerService() {
         super();
+
     }
 
     public void setAdapter (BaseAdapter adapter) {
@@ -93,7 +103,7 @@ public class LeScannerService extends Service {
         // Set the default scan interval in ms.
         sleepPeriod = 2500;
 
-        // Set up the bluetoooth adapter through manager
+        // Set up the bluetooth adapter through manager
         BluetoothManager btMan = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
         btAdapter = btMan.getAdapter();
 
@@ -113,8 +123,10 @@ public class LeScannerService extends Service {
         // Initiate the scanning variable
         scanning = false;
 
-        btleDeviceList = new LeDeviceList();
+        btleDeviceList = new LeBeaconList();
 
+        // set up the association list
+        LeAssociationList associationList = new LeAssociationList(getApplicationContext());
     }
 
     @Override
@@ -128,10 +140,13 @@ public class LeScannerService extends Service {
         return btleDeviceList.getCount();
     }
 
+    // Returns the beacon list from the service.
     public ArrayListBeacon getList () {
         return btleDeviceList.getList();
     }
 
+    // Toggles a scan, if a scan is running, the running scan is stopped
+    // to prevent errors.
     public void scan() {
         if (!scanning) {
             // Stops scanning after a pre-defined scan period.

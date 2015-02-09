@@ -32,6 +32,11 @@
             android:exported="true" >
         </service>
 
+        <activity
+            android:name=".LeDeviceListActivity"
+            android:label="@string/title_activity_le_device_list" >
+        </activity>
+
     </application>
 
 </manifest>

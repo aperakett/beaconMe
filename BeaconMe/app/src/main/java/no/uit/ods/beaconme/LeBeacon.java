@@ -4,8 +4,15 @@ import android.bluetooth.BluetoothDevice;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-/**
- * Classholder for BT devices
+/*
+ *  Author: Espen Mæland Wilhelmsen, espen.wilhelmsen@gmail.com
+ *
+ *  This class implements beacon. It holds a bluetooth device which
+ *  is accessed through the bundled methods.
+ *
+ *  The threshold is used to delay the beacon from being removed the
+ *  beacon list.
+ *
  */
 public class LeBeacon implements Parcelable {
     private BluetoothDevice btDevice;
@@ -29,6 +36,14 @@ public class LeBeacon implements Parcelable {
 
     public void putRssi (int strength) {
         this.rssi = strength;
+    }
+
+    public String getId () {
+        return this.btDevice.getAddress();
+    }
+
+    public String getUuid () {
+        return this.btDevice.getUuids().toString();
     }
 
     public int getThreshold () {

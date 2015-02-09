@@ -10,7 +10,9 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 
+import java.io.FileNotFoundException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -20,7 +22,7 @@ import java.util.concurrent.TimeUnit;
 public class MainActivity extends ActionBarActivity {
     public LeScannerService mService;
     public boolean mBound = false;
-
+    public LeAssociationList assList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,8 +39,15 @@ public class MainActivity extends ActionBarActivity {
         // start the scan schedule
         schedulePeriodicalScan();
 
+//        assList = new LeAssociationList(this.getApplicationContext());
+
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unbindService(mConnection);
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -57,6 +66,9 @@ public class MainActivity extends ActionBarActivity {
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             return true;
+        }
+        else if (id == R.id.action_scan) {
+            scanBtleDevices(item.getActionView());
         }
 
         return super.onOptionsItemSelected(item);
@@ -83,7 +95,7 @@ public class MainActivity extends ActionBarActivity {
 
     // Schedules periodical BTLE scan
     public void schedulePeriodicalScan () {
-Log.i("Main", "schedulePeriodicalScan()");
+
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
         final Runnable scan = new Runnable() {
             @Override
@@ -101,4 +113,13 @@ Log.i("Main", "schedulePeriodicalScan()");
         }, 60 * 60, TimeUnit.SECONDS);
     }
 
+    // Starts the scan activity, which shows a list of ALL nearby beacons
+    public void scanBtleDevices (View view) {
+        Intent intent = new Intent(this, LeDeviceListActivity.class);
+        Bundle bundle = new Bundle();
+        bundle.putBinder("binder", mService.getBinder());
+        intent.putExtras(bundle);
+        startActivity(intent, bundle);
+
+    }
 }

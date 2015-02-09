@@ -8,17 +8,17 @@ import android.view.LayoutInflater;
  * Storage class for the bluetooth low energy devices
  *
  */
-public class LeDeviceList {
+public class LeBeaconList {
     private ArrayListBeacon btleDevices;
     private LayoutInflater inflater;
 
     // Constructor
-    public LeDeviceList() {
+    public LeBeaconList() {
         super();
 
         btleDevices = new ArrayListBeacon();
     }
-    public LeDeviceList(ArrayListBeacon list) {
+    public LeBeaconList(ArrayListBeacon list) {
         super();
         btleDevices = list.clone();
 
