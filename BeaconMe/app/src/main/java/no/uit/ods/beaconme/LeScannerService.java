@@ -62,7 +62,7 @@ public class LeScannerService extends Service {
             new BluetoothAdapter.LeScanCallback() {
                 @Override
                 public void onLeScan(final BluetoothDevice device, int rssi, byte[] scanRecord) {
-                    final LeBeacon beacon = new LeBeacon(device, rssi);
+                    final LeBeacon beacon = new LeBeacon(device, rssi, scanRecord);
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
