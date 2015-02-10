@@ -20,8 +20,25 @@ import java.net.URL;
  * and at the server. Hence, the caller of this class must only
  * set a username and password for which the server can authenticate
  * with.
+ * <p>
+ * The BeaconFactory must be run in a separate thread due to Android
+ * restrictions, see example usage below.
+ * <pre>
+ * {@code
+ *     final BeaconFactory beaconFactory;
+ *     String url = "http://url:port";
+ *     beaconFactory = new BeaconFactory(url);
+ *     beaconFactory.setUser("example@user.com", "my_password");
  *
- * @author 	Vegard Strand
+ *     new Thread() {
+ *         public void run() {
+ *             beaconFactory.establishConnection();
+ *             ...
+ *         }
+ *     }.start();
+ * </pre>
+ *
+ * @author 	Vegard Strand (vegard920@gmail.com)
  * @version	1.0
  * @since	2015-02-09
  */

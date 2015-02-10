@@ -11,8 +11,10 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Toast;
 
-import java.io.FileNotFoundException;
+import org.json.JSONObject;
+
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -23,6 +25,9 @@ public class MainActivity extends ActionBarActivity {
     public LeScannerService mService;
     public boolean mBound = false;
     public LeAssociationList assList;
+
+    public FactoryNetworkService mFNetwork;
+    public boolean mFBound = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,12 +46,46 @@ public class MainActivity extends ActionBarActivity {
 
 //        assList = new LeAssociationList(this.getApplicationContext());
 
+
+        // Beacon Factory Network Service
+        intent = new Intent(this, FactoryNetworkService.class);
+        bindService(intent, mTConnection, Context.BIND_AUTO_CREATE);
+        startService(intent);
     }
+
+
+    public void connectAndGet(View view) {
+        boolean s;
+        s = mFNetwork.establishConnection();
+        JSONObject o = mFNetwork.getCategories();
+        Log.i("Main", "Categories : " + o);
+        o = mFNetwork.getBeacon("abcd:efxx");
+        Log.i("Main", "Beacon (abcd:efxx) : " + o);
+        Toast.makeText(this, "establishConnection " + s, Toast.LENGTH_LONG).show();
+    }
+
+    private ServiceConnection mTConnection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName className,
+                                       IBinder service) {
+            // We've bound to LocalService, cast the IBinder and get LocalService instance
+            FactoryNetworkService.LocalBinder binder = (FactoryNetworkService.LocalBinder) service;
+            mFNetwork = binder.getService();
+            mFBound = true;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName arg0) {
+            mFBound = false;
+        }
+    };
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
         unbindService(mConnection);
+        unbindService(mTConnection);
     }
 
     @Override
