@@ -12,10 +12,13 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
 import android.util.Log;
-import android.widget.BaseAdapter;
 import android.widget.Toast;
 
-/*
+import org.json.JSONException;
+
+import java.util.concurrent.Executors;
+
+/**
  *  Author: Espen Mæland Wilhelmsen, espen.wilhelmsen@gmail.com
  *
  *  This class implements a scanner service that maintains a list of
@@ -23,14 +26,12 @@ import android.widget.Toast;
  *
  *  The class checks for both BT and BTLE support
  */
-public class LeScannerService extends Service {
+public class BeaconScannerService extends Service {
     private Handler handler;
     private BluetoothAdapter btAdapter;
-    private LeBeaconList btleDeviceList;
-    public LeAssociationList associationList;
+    private BeaconList btleDeviceList;
+    public BeaconAssociationList associationList;
 
-    //TODO implement as list (mAdapter)
-    private BaseAdapter mAdapter;
     private boolean scanning;
     private int sleepPeriod;
 
@@ -42,9 +43,9 @@ public class LeScannerService extends Service {
      * runs in the same process as its clients, we don't need to deal with IPC.
      */
     public class LocalBinder extends Binder {
-        LeScannerService getService() {
+        BeaconScannerService getService() {
             // Return this instance of LocalService so clients can call public methods
-            return LeScannerService.this;
+            return BeaconScannerService.this;
         }
     }
 
@@ -62,14 +63,11 @@ public class LeScannerService extends Service {
             new BluetoothAdapter.LeScanCallback() {
                 @Override
                 public void onLeScan(final BluetoothDevice device, int rssi, byte[] scanRecord) {
-                    final LeBeacon beacon = new LeBeacon(device, rssi, scanRecord);
+                    final Beacon beacon = new Beacon(device, rssi, scanRecord);
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
-
                             btleDeviceList.addDevice(beacon);
-                            if (mAdapter != null)
-                                mAdapter.notifyDataSetChanged();
                         }
                     });
 
@@ -78,13 +76,8 @@ public class LeScannerService extends Service {
             };
 
     // Constructor method.
-    public LeScannerService() {
+    public BeaconScannerService() {
         super();
-
-    }
-
-    public void setAdapter (BaseAdapter adapter) {
-        mAdapter = adapter;
     }
 
     @Override
@@ -98,7 +91,8 @@ public class LeScannerService extends Service {
         }
 
         // create the handler used for timer aborted scanning...
-        handler = new Handler();
+        handler = new Handler(thread.getLooper());
+
 
         // Set the default scan interval in ms.
         sleepPeriod = 2500;
@@ -123,17 +117,23 @@ public class LeScannerService extends Service {
         // Initiate the scanning variable
         scanning = false;
 
-        btleDeviceList = new LeBeaconList();
+        // initialize the beacon device list
+        btleDeviceList = new BeaconList();
 
         // set up the association list
-        LeAssociationList associationList = new LeAssociationList(getApplicationContext());
+        associationList = new BeaconAssociationList(getApplicationContext());
+
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-//        Log.i("ON_START_COMMAND", "Starting?");
+        Log.i("BeaconScanService", "Starting?");
         // TODO Evalue sticky vs not sticky....
         return START_NOT_STICKY;
+    }
+    @Override
+    public void onDestroy () {
+        Log.i("BeaconScanService", "onDestroy()");
     }
 
     public int getNumberOfDevices () {
@@ -141,8 +141,8 @@ public class LeScannerService extends Service {
     }
 
     // Returns the beacon list from the service.
-    public ArrayListBeacon getList () {
-        return btleDeviceList.getList();
+    public BeaconList getList () {
+        return btleDeviceList;
     }
 
     // Toggles a scan, if a scan is running, the running scan is stopped
@@ -169,6 +169,43 @@ public class LeScannerService extends Service {
             btAdapter.stopLeScan(btleScanCallback);
         }
 
+    }
+
+    public void addAssociation(Beacon beacon, String association) {
+        try {
+            associationList.add(beacon.getId(), beacon.getUuid(), association);
+        }
+        catch (Exception e) {
+            Log.e("BeaconScannerService", e.getMessage());
+        }
+    }
+
+
+    public String getAssociation(String id, String uuid) {
+        try {
+            return associationList.get(id, uuid);
+        }
+        catch (Exception e) {
+            Log.e("BeaconScannerService", e.getMessage());
+        }
+        return null;
+    }
+
+    public void removeAssociation(String id, String uuid) {
+        try {
+            associationList.remove(id, uuid);
+        } catch (JSONException e) {
+            Log.e("BeaconScannerService", "failed to remove association: " + e.getMessage());
+        }
+    }
+
+    public void commitAssociation() {
+        try {
+            associationList.commit();
+        }
+        catch (Exception e) {
+            Log.e("BeaconScannerService", "failed to commit associations: " + e.getMessage());
+        }
     }
 }
 

@@ -11,7 +11,7 @@
     <string name="bt_not_supported">Bluetooth is not supported!</string>
 
     // Strings used by beacon scan list activity
-    <string name="discovered_beacons">Discovered beacons:</string>
+    <string name="discovered_beacons">Nearby beacons:</string>
     <string name="unknown_device">UnknownDevice</string>
     <string name="title_activity_le_device_list">LeDeviceListActivity</string>
 

@@ -12,9 +12,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
-
 import org.json.JSONObject;
-
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -22,9 +20,8 @@ import java.util.concurrent.TimeUnit;
 
 
 public class MainActivity extends ActionBarActivity {
-    public LeScannerService mService;
+    public BeaconScannerService mService;
     public boolean mBound = false;
-    public LeAssociationList assList;
 
     public FactoryNetworkService mFNetwork;
     public boolean mFBound = false;
@@ -37,15 +34,12 @@ public class MainActivity extends ActionBarActivity {
         Log.i("Main", "onCreate()");
 
         // Bind service, binds the service so it's reachable from different classes
-        Intent intent = new Intent(this, LeScannerService.class);
+        Intent intent = new Intent(this, BeaconScannerService.class);
         bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
         startService(intent);
 
         // start the scan schedule
         schedulePeriodicalScan();
-
-//        assList = new LeAssociationList(this.getApplicationContext());
-
 
         // Beacon Factory Network Service
         intent = new Intent(this, FactoryNetworkService.class);
@@ -62,6 +56,7 @@ public class MainActivity extends ActionBarActivity {
         o = mFNetwork.getBeacon("abcd:efxx");
         Log.i("Main", "Beacon (abcd:efxx) : " + o);
         Toast.makeText(this, "establishConnection " + s, Toast.LENGTH_LONG).show();
+
     }
 
     private ServiceConnection mTConnection = new ServiceConnection() {
@@ -120,7 +115,7 @@ public class MainActivity extends ActionBarActivity {
         public void onServiceConnected(ComponentName className,
                                        IBinder service) {
             // We've bound to LocalService, cast the IBinder and get LocalService instance
-            LeScannerService.LocalBinder binder = (LeScannerService.LocalBinder) service;
+            BeaconScannerService.LocalBinder binder = (BeaconScannerService.LocalBinder) service;
             mService = binder.getService();
             mBound = true;
         }
@@ -134,7 +129,6 @@ public class MainActivity extends ActionBarActivity {
 
     // Schedules periodical BTLE scan
     public void schedulePeriodicalScan () {
-
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
         final Runnable scan = new Runnable() {
             @Override
@@ -143,22 +137,31 @@ public class MainActivity extends ActionBarActivity {
             }
         };
 
-        final ScheduledFuture scannerHandle = scheduler.scheduleAtFixedRate(scan, 2500, 2500, TimeUnit.MILLISECONDS);
+        final Thread t = new Thread () {
+            public void run () {
+                try {
+                  scan.run();
+                } catch (Exception e) {
+
+                }
+            }
+        };
+        final ScheduledFuture scannerHandle = scheduler.scheduleAtFixedRate(t, 5000, 5000, TimeUnit.MILLISECONDS);
         scheduler.schedule(new Runnable() {
             @Override
             public void run() {
                 scannerHandle.cancel(false);
             }
         }, 60 * 60, TimeUnit.SECONDS);
+
     }
 
     // Starts the scan activity, which shows a list of ALL nearby beacons
     public void scanBtleDevices (View view) {
-        Intent intent = new Intent(this, LeDeviceListActivity.class);
+        Intent intent = new Intent(this, BeaconListActivity.class);
         Bundle bundle = new Bundle();
         bundle.putBinder("binder", mService.getBinder());
         intent.putExtras(bundle);
         startActivity(intent, bundle);
-
     }
 }

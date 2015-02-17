@@ -2,13 +2,9 @@ package no.uit.ods.beaconme;
 
 import android.bluetooth.BluetoothDevice;
 import android.os.Parcel;
-import android.os.ParcelUuid;
 import android.os.Parcelable;
-import android.widget.Toast;
 
-import java.math.BigInteger;
 import java.util.Arrays;
-import java.util.UUID;
 
 /*
  *  Author: Espen Mæland Wilhelmsen, espen.wilhelmsen@gmail.com
@@ -19,15 +15,16 @@ import java.util.UUID;
  *  The threshold is used to delay the beacon from being removed the
  *  beacon list.
  *
+ *  TODO remove parcable, and public variables
  */
-public class LeBeacon implements Parcelable {
+public class Beacon implements Parcelable {
     private BluetoothDevice btDevice;
     private int             rssi;
     private int             threshold;
     public byte[]          scanRecord;
     final private int       initialThreshold = 2;
 
-    public LeBeacon (BluetoothDevice device, int signal, byte[] sRecord) {
+    public Beacon(BluetoothDevice device, int signal, byte[] sRecord) {
         this.btDevice = device;
         this.rssi = signal;
         this.scanRecord = sRecord;
@@ -85,7 +82,7 @@ public class LeBeacon implements Parcelable {
         this.btDevice = device;
     }
 
-    protected LeBeacon(Parcel in) {
+    protected Beacon(Parcel in) {
         btDevice = (BluetoothDevice) in.readValue(BluetoothDevice.class.getClassLoader());
         rssi = in.readInt();
     }
@@ -102,15 +99,15 @@ public class LeBeacon implements Parcelable {
     }
 
     @SuppressWarnings("unused")
-    public static final Parcelable.Creator<LeBeacon> CREATOR = new Parcelable.Creator<LeBeacon>() {
+    public static final Parcelable.Creator<Beacon> CREATOR = new Parcelable.Creator<Beacon>() {
         @Override
-        public LeBeacon createFromParcel(Parcel in) {
-            return new LeBeacon(in);
+        public Beacon createFromParcel(Parcel in) {
+            return new Beacon(in);
         }
 
         @Override
-        public LeBeacon[] newArray(int size) {
-            return new LeBeacon[size];
+        public Beacon[] newArray(int size) {
+            return new Beacon[size];
         }
     };
 }

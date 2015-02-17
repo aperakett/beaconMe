@@ -2,13 +2,14 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
-        android:id="@+id/menu_context_device_list_item1"
-        android:title="Uhhhhm, i'm the first item.."
-    />
+        android:id="@+id/menu_context_device_list_add"
+        android:title="Add Association"
+        />
 
     <item
-        android:id="@+id/menu_context_device_list_add"
-        android:title="AddAssociation"
+        android:id="@+id/menu_context_device_list_remove"
+        android:title="Remove Association"
     />
+
 
 </menu>
