@@ -27,14 +27,15 @@
         </activity>
 
         <service
-            android:name=".LeScannerService"
+            android:name=".BeaconScannerService"
             android:enabled="true"
             android:exported="true" >
         </service>
 
         <activity
-            android:name=".LeDeviceListActivity"
-            android:label="@string/title_activity_le_device_list" >
+            android:name=".BeaconListActivity"
+            android:label="@string/title_activity_le_device_list"
+            android:screenOrientation="portrait">
         </activity>
 
     </application>
