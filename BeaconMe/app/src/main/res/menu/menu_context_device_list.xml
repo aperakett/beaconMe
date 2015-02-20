@@ -3,13 +3,17 @@
 
     <item
         android:id="@+id/menu_context_device_list_add"
-        android:title="Add Association"
-        />
+        android:title="Add Local Association"
+    />
 
     <item
         android:id="@+id/menu_context_device_list_remove"
-        android:title="Remove Association"
+        android:title="Remove Local Association"
     />
 
+    <item
+        android:id="@+id/menu_context_device_remote_add"
+        android:title="Add remote Association"
+    />
 
 </menu>

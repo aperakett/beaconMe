@@ -8,7 +8,17 @@ import java.util.ArrayList;
 /**
  *  Author: Espen Mæland Wilhelmsen, espen.wilhelmsen@gmail.com
  *
- *  Storage class for the bluetooth low energy devices
+ *  Storage class for the bluetooth low energy devices.
+ *  The class is specialised to hold the Beacon class objects.
+ *
+ *  The add method adds a beacon only after checking if the address (MAC)
+ *  of the beacon is allready in the list.
+ *
+ *  The clear method of the class is based on the threshold
+ *  variable in the Beacon class, if a beacon has a threshold of 0
+ *  it's removed, if not it left in the list and the threshold is
+ *  decreased.
+ *
  */
 public class BeaconList {
     private ArrayList<Beacon> list;
@@ -32,18 +42,8 @@ public class BeaconList {
             // Update the RSSI variable while here..
             b.putRssi(beacon.getRssi());
             b.resetThreshold();
-//            Log.i("BeaconList", "Updating RSSI");
         }
 
-    }
-
-    public BeaconListAdapter getAdapter () {
-        return mAdapter;
-    }
-
-    public void setAdapter (BeaconListAdapter adapter) {
-//        Log.i("BeaconList", "Setting adapter: " + adapter.toString());
-        mAdapter = adapter;
     }
 
     // Clear the list (purge all devices)
@@ -55,12 +55,10 @@ public class BeaconList {
 
             //check if the threshold is 0, if so remove the beacon
             if (beacon.getThreshold() <= 0) {
-//                Log.i("BeaconList", "clear(), Removing beacon number: " + String.valueOf(i));
                 list.remove(i);
                 i--;
             }
             else {
-//                Log.i("Beacon.clear()", "Decreasing counter on beacon: " + String.valueOf(i) + " to " + String.valueOf(beacon.getThreshold()));
                 beacon.decreaseThreshold();
             }
         }
@@ -86,7 +84,7 @@ public class BeaconList {
         return false;
     }
 
-    // Check if beacon is contained in list
+    // fetch a beacon from the list
     public Beacon get (Beacon beacon) {
         for (int i = 0; i < list.size(); i++) {
             Beacon b = ((Beacon) list.get(i));

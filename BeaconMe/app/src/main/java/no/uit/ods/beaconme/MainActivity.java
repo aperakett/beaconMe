@@ -160,7 +160,8 @@ public class MainActivity extends ActionBarActivity {
     public void scanBtleDevices (View view) {
         Intent intent = new Intent(this, BeaconListActivity.class);
         Bundle bundle = new Bundle();
-        bundle.putBinder("binder", mService.getBinder());
+        bundle.putBinder("binderScan", mService.getBinder());
+        bundle.putBinder("binderNetwork", mFNetwork.getBinder());
         intent.putExtras(bundle);
         startActivity(intent, bundle);
     }

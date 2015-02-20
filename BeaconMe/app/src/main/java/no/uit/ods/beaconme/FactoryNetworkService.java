@@ -37,6 +37,10 @@ public class FactoryNetworkService extends Service {
         return mBinder;
     }
 
+    public IBinder getBinder () {
+        return mBinder;
+    }
+
     @Override
     public int onStartCommand(Intent intent, int flags, int startID) {
         Toast.makeText(this, "FactoryNetworkService Started", Toast.LENGTH_LONG).show();
@@ -96,7 +100,6 @@ public class FactoryNetworkService extends Service {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-
         return categories.getCategories();
     }
 
