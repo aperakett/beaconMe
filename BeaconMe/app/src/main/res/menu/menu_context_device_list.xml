@@ -3,17 +3,17 @@
 
     <item
         android:id="@+id/menu_context_device_list_add"
-        android:title="Add Local Association"
+        android:title="Add Beacon"
     />
 
     <item
         android:id="@+id/menu_context_device_list_remove"
-        android:title="Remove Local Association"
+        android:title="Remove Beacon"
     />
 
     <item
         android:id="@+id/menu_context_device_remote_add"
-        android:title="Add remote Association"
+        android:title="Add to server"
     />
 
 </menu>

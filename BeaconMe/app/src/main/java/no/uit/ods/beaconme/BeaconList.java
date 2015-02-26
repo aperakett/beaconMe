@@ -22,7 +22,6 @@ import java.util.ArrayList;
  */
 public class BeaconList {
     private ArrayList<Beacon> list;
-    private BeaconListAdapter mAdapter;
 
     // Constructor
     public BeaconList() {
@@ -84,6 +83,16 @@ public class BeaconList {
         return false;
     }
 
+    // Check if beacon is contained in list based on MAC
+    public boolean contains (String mac) {
+        for (int i = 0; i < list.size(); i++) {
+            Beacon b = list.get(i);
+            if (b.getBtDevice().getAddress().equals(mac))
+                return true;
+        }
+        return false;
+    }
+
     // fetch a beacon from the list
     public Beacon get (Beacon beacon) {
         for (int i = 0; i < list.size(); i++) {
@@ -96,7 +105,7 @@ public class BeaconList {
         return null;
     }
 
-    public Beacon getItem(int i) {
+    public Beacon getItem(int i) throws IndexOutOfBoundsException {
         return list.get(i);
     }
 

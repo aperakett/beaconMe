@@ -90,6 +90,10 @@ public class BeaconAssociationList {
             return ((JSONObject) associations.get(i)).get("value").toString();
     }
 
+    public JSONObject get (int i) throws JSONException {
+        return ((JSONObject) associations.get(i));
+    }
+
     private int contains (String id, String uuid) throws JSONException {
         int uuidNum = -1;
         for (int i = 0; i < associations.length(); i++) {
@@ -98,11 +102,15 @@ public class BeaconAssociationList {
                 // Todo, change id or uuid if one is not matching?
                 return i;
             // save the position of a matching uuid
-            else if (ass.get("uuid").equals(uuid))
-                uuidNum = i;
+//            else if (ass.get("uuid").equals(uuid))
+//                uuidNum = i;
         }
         // return the hit on uuid since no hit on id was found
         return uuidNum;
+    }
+
+    public int getCount () {
+        return associations.length();
     }
 
     public void commit () throws IOException {

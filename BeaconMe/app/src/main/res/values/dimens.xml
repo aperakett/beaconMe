@@ -10,4 +10,6 @@
     <dimen name="device_list_no_beacon_found_size">20sp</dimen>
 
     <dimen name="add_beacon_association_label_size">10dp</dimen>
+
+    <dimen name="device_list_my_beacon_font_size">14sp</dimen>
 </resources>

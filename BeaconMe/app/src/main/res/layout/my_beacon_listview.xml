@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="fragment"
+    android:padding="4dp"
+    android:id="@+id/my_beacon_frame"
+    android:background="@drawable/border">
+
+    <ImageView
+        android:layout_height="@dimen/device_list_icon_size"
+        android:layout_width="@dimen/device_list_icon_size"
+        android:paddingTop="5dp"
+        android:adjustViewBounds="true"
+        android:id="@+id/my_beacon_pic"
+        android:src="@drawable/beacon"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="@dimen/device_list_my_beacon_font_size"
+        android:id="@+id/my_beacon_value"
+        android:layout_centerHorizontal="true"
+        android:paddingLeft="@dimen/device_list_icon_padding_size"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="@dimen/device_list_font_size_uuid"
+        android:id="@+id/my_beacon_uuid"
+        android:layout_below="@id/my_beacon_value"
+        android:layout_centerHorizontal="true"
+        android:paddingLeft="@dimen/device_list_icon_padding_size"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="@dimen/device_list_font_size"
+        android:id="@+id/my_beacon_addr"
+        android:layout_below="@id/my_beacon_uuid"
+        android:layout_centerHorizontal="true"
+        android:paddingLeft="@dimen/device_list_icon_padding_size"/>
+
+
+
+</RelativeLayout>

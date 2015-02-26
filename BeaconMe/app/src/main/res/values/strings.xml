@@ -6,6 +6,7 @@
     <string name="action_settings">Settings</string>
     <string name="scan">Scan</string>
 
+
     // Strings used by the scanner service
     <string name="btle_not_supported">Bluetooth Low Energy is not supported!</string>
     <string name="bt_not_supported">Bluetooth is not supported!</string>
@@ -19,6 +20,10 @@
     // Strings used by association list
     <string name="association_filename">associations.raw</string>
 
+    // My Beacons activity
     <string name="categories">Select category:</string>
     <string name="categories_beacon_info">Beacon Information:</string>
+    <string name="title_activity_my_associations">MyBeacons</string>
+    <string name="my_beacons">My Beacons:</string>
+    <string name="delete">Delete</string>
 </resources>

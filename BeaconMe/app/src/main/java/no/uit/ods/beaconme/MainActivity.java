@@ -104,6 +104,9 @@ public class MainActivity extends ActionBarActivity {
         else if (id == R.id.action_scan) {
             scanBtleDevices(item.getActionView());
         }
+        else if (id == R.id.action_mybeacons) {
+            myBeacons(item.getActionView());
+        }
 
         return super.onOptionsItemSelected(item);
     }
@@ -158,7 +161,17 @@ public class MainActivity extends ActionBarActivity {
 
     // Starts the scan activity, which shows a list of ALL nearby beacons
     public void scanBtleDevices (View view) {
-        Intent intent = new Intent(this, BeaconListActivity.class);
+        Intent intent = new Intent(this, BeaconScanListActivity.class);
+        Bundle bundle = new Bundle();
+        bundle.putBinder("binderScan", mService.getBinder());
+        bundle.putBinder("binderNetwork", mFNetwork.getBinder());
+        intent.putExtras(bundle);
+        startActivity(intent, bundle);
+    }
+
+    // Starts the MyBeacon activity, which shows a list of ALL nearby beacons
+    public void myBeacons (View view) {
+        Intent intent = new Intent(this, MyBeacons.class);
         Bundle bundle = new Bundle();
         bundle.putBinder("binderScan", mService.getBinder());
         bundle.putBinder("binderNetwork", mFNetwork.getBinder());

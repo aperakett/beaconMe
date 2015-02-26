@@ -13,5 +13,10 @@
         android:orderInCategory="100"
         app:showAsAction="never"/>
 
+    <item
+        android:id="@+id/action_mybeacons"
+        android:title="@string/my_beacons"
+        android:orderInCategory="100"
+        app:showAsAction="never"/>
 
 </menu>

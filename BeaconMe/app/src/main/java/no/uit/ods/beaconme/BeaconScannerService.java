@@ -30,9 +30,9 @@ public class BeaconScannerService extends Service {
     private Handler handler;
     private BluetoothAdapter btAdapter;
     private BeaconList btleDeviceList;
-    public BeaconAssociationList associationList;
+    private BeaconAssociationList associationList;
 
-    private boolean scanning;
+//    private boolean scanning;
     private int sleepPeriod;
 
     // Binder given to clients
@@ -115,7 +115,7 @@ public class BeaconScannerService extends Service {
         }
 
         // Initiate the scanning variable
-        scanning = false;
+//        scanning = false;
 
         // initialize the beacon device list
         btleDeviceList = new BeaconList();
@@ -148,26 +148,26 @@ public class BeaconScannerService extends Service {
     // Toggles a scan, if a scan is running, the running scan is stopped
     // to prevent errors.
     public void scan() {
-        if (!scanning) {
+//        if (!scanning) {
             // Stops scanning after a pre-defined scan period.
             handler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    scanning = false;
+//                    scanning = false;
                     btAdapter.stopLeScan(btleScanCallback);
                 }
             }, sleepPeriod);
 
-            scanning = true;
+//            scanning = true;
 
             // clear beacons out of range before starting scan
             btleDeviceList.clear();
             btAdapter.startLeScan(btleScanCallback);
-        }
-        else {
-            scanning = false;
-            btAdapter.stopLeScan(btleScanCallback);
-        }
+//        }
+//        else {
+//            scanning = false;
+//            btAdapter.stopLeScan(btleScanCallback);
+//        }
 
     }
 
@@ -206,6 +206,10 @@ public class BeaconScannerService extends Service {
         catch (Exception e) {
             Log.e("BeaconScannerService", "failed to commit associations: " + e.getMessage());
         }
+    }
+
+    public BeaconAssociationList getAssociations() {
+        return associationList;
     }
 }
 
