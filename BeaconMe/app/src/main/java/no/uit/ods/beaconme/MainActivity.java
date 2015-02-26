@@ -164,7 +164,6 @@ public class MainActivity extends ActionBarActivity {
         Intent intent = new Intent(this, BeaconScanListActivity.class);
         Bundle bundle = new Bundle();
         bundle.putBinder("binderScan", mService.getBinder());
-        bundle.putBinder("binderNetwork", mFNetwork.getBinder());
         intent.putExtras(bundle);
         startActivity(intent, bundle);
     }
@@ -174,7 +173,6 @@ public class MainActivity extends ActionBarActivity {
         Intent intent = new Intent(this, MyBeacons.class);
         Bundle bundle = new Bundle();
         bundle.putBinder("binderScan", mService.getBinder());
-        bundle.putBinder("binderNetwork", mFNetwork.getBinder());
         intent.putExtras(bundle);
         startActivity(intent, bundle);
     }
