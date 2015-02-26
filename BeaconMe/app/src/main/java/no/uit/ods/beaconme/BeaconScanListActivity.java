@@ -241,8 +241,8 @@ public class BeaconScanListActivity extends Activity implements AbsListView.OnIt
 
         try {
             // get information about beacon from backend
-            JSONObject beaconInfoBackend = mFNetwork.getBeacon(beacon.getId());
-            beaconInfo.append("\nAssociated to:\n" + beaconInfoBackend.get("url").toString());
+            // JSONObject beaconInfoBackend = mFNetwork.getBeacon(beacon.getId());
+            // beaconInfo.append("\nAssociated to:\n" + beaconInfoBackend.get("url").toString());
         }
         catch (Exception e) {
             Log.e("BeaconScanListActivity", "Failed getting beaconinfo from backend: " + e.getMessage());
@@ -269,7 +269,7 @@ public class BeaconScanListActivity extends Activity implements AbsListView.OnIt
                     Log.e("BeaconScanListActivity", "Failed getting categorynumber from JSONArray with: " + e.getMessage());
                 }
                 Log.e("BeaconScanListActivity", "category id: " + String.valueOf(t));
-                mFNetwork.setBeacon(beacon.getUuid(), inAssStr, t, beacon.getId());
+                // mFNetwork.setBeacon(beacon.getUuid(), inAssStr, t, beacon.getId());
 
             }
         });

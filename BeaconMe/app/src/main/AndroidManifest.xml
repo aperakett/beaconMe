@@ -30,7 +30,7 @@
             android:enabled="true"
             android:exported="true" >
         </service>
-        <service android:name=".FactoryNetworkService" >
+        <service android:name=".BeaconClient" >
         </service>
 
         <activity
