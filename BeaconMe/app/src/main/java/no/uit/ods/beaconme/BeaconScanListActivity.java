@@ -41,7 +41,6 @@ import java.util.concurrent.TimeUnit;
 
 public class BeaconScanListActivity extends Activity implements AbsListView.OnItemClickListener {
     private BeaconScannerService    mService;
-    private FactoryNetworkService   mFNetwork;
     private BeaconScanListAdapter   mAdapter;
     private BeaconList              mList;
     private ListView                mListView;
@@ -62,11 +61,6 @@ public class BeaconScanListActivity extends Activity implements AbsListView.OnIt
             IBinder iBinder = bundle.getBinder("binderScan");
             BeaconScannerService.LocalBinder binderScan = (BeaconScannerService.LocalBinder) iBinder;
             mService = binderScan.getService();
-
-            // set up the network service
-            iBinder = bundle.getBinder("binderNetwork");
-            FactoryNetworkService.LocalBinder binderNetwork = (FactoryNetworkService.LocalBinder) iBinder;
-            mFNetwork = binderNetwork.getService();
 
             createListView();
             initialized = true;
@@ -244,8 +238,8 @@ public class BeaconScanListActivity extends Activity implements AbsListView.OnIt
 
         try {
             // get information about beacon from backend
-            // JSONObject beaconInfoBackend = mFNetwork.getBeacon(beacon.getId());
-            // beaconInfo.append("\nAssociated to:\n" + beaconInfoBackend.get("url").toString());
+//            JSONObject beaconInfoBackend = mFNetwork.getBeacon(beacon.getId());
+//            beaconInfo.append("\nAssociated to:\n" + beaconInfoBackend.get("url").toString());
         }
         catch (Exception e) {
             Log.e("BeaconScanListActivity", "Failed getting beaconinfo from backend: " + e.getMessage());
@@ -272,7 +266,7 @@ public class BeaconScanListActivity extends Activity implements AbsListView.OnIt
                     Log.e("BeaconScanListActivity", "Failed getting categorynumber from JSONArray with: " + e.getMessage());
                 }
                 Log.e("BeaconScanListActivity", "category id: " + String.valueOf(t));
-                // mFNetwork.setBeacon(beacon.getUuid(), inAssStr, t, beacon.getId());
+//                mFNetwork.setBeacon(beacon.getUuid(), inAssStr, t, beacon.getId());
 
             }
         });
