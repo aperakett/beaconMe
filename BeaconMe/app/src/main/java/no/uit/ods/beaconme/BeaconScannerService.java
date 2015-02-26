@@ -148,32 +148,23 @@ public class BeaconScannerService extends Service {
     // Toggles a scan, if a scan is running, the running scan is stopped
     // to prevent errors.
     public void scan() {
-//        if (!scanning) {
-            // Stops scanning after a pre-defined scan period.
-            handler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-//                    scanning = false;
-                    btAdapter.stopLeScan(btleScanCallback);
-                }
-            }, sleepPeriod);
 
-//            scanning = true;
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
 
-            // clear beacons out of range before starting scan
-            btleDeviceList.clear();
-            btAdapter.startLeScan(btleScanCallback);
-//        }
-//        else {
-//            scanning = false;
-//            btAdapter.stopLeScan(btleScanCallback);
-//        }
+                btAdapter.stopLeScan(btleScanCallback);
+            }
+        }, sleepPeriod);
 
+        // clear beacons out of range before starting scan
+        btleDeviceList.clear();
+        btAdapter.startLeScan(btleScanCallback);
     }
 
-    public void addAssociation(Beacon beacon, String association) {
+    public void addAssociation(Beacon beacon, String name, String association) {
         try {
-            associationList.add(beacon.getId(), beacon.getUuid(), association);
+            associationList.add(beacon.getId(), beacon.getUuid(), name, association);
         }
         catch (Exception e) {
             Log.e("BeaconScannerService", e.getMessage());
@@ -183,7 +174,17 @@ public class BeaconScannerService extends Service {
 
     public String getAssociation(String id, String uuid) {
         try {
-            return associationList.get(id, uuid);
+            return associationList.getAssociation(id, uuid);
+        }
+        catch (Exception e) {
+            Log.e("BeaconScannerService", e.getMessage());
+        }
+        return null;
+    }
+
+    public String getAssociationName(String id, String uuid) {
+        try {
+            return associationList.getName(id, uuid);
         }
         catch (Exception e) {
             Log.e("BeaconScannerService", e.getMessage());

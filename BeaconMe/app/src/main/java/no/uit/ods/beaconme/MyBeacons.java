@@ -166,6 +166,7 @@ public class MyBeacons extends ActionBarActivity implements AbsListView.OnItemCl
             if (view == null) {
                 view = inflater.inflate(R.layout.my_beacon_listview, null);
                 viewHolder = new ViewHolderBeacon();
+                viewHolder.deviceName = (TextView) view.findViewById(R.id.my_beacon_name);
                 viewHolder.deviceValue = (TextView) view.findViewById(R.id.my_beacon_value);
                 viewHolder.deviceId = (TextView) view.findViewById(R.id.my_beacon_addr);
                 viewHolder.deviceUuid = (TextView) view.findViewById(R.id.my_beacon_uuid);
@@ -176,6 +177,7 @@ public class MyBeacons extends ActionBarActivity implements AbsListView.OnItemCl
 
             try {
                 JSONObject ass = btleDevices.get(i);
+                viewHolder.deviceName.setText(ass.get("name").toString());
                 viewHolder.deviceValue.setText(ass.get("value").toString());
                 viewHolder.deviceId.setText(ass.get("id").toString());
                 viewHolder.deviceUuid.setText(ass.get("uuid").toString());
@@ -191,6 +193,7 @@ public class MyBeacons extends ActionBarActivity implements AbsListView.OnItemCl
 
     private class ViewHolderBeacon {
         ImageView   devicePic;
+        TextView    deviceName;
         TextView    deviceValue;
         TextView    deviceUuid;
         TextView    deviceId;
