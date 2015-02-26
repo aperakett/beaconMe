@@ -22,13 +22,16 @@ import java.util.LinkedList;
  * search and find values depending the id of the beacon.
  */
 public class BeaconAssociationList {
-//    private LinkedList  associations;
     private JSONArray   associations;
     private File        assFile;
 
+    /**
+     *  Constructor method for Beacon Association List.
+     *
+     *  It needs a context in order to be able to access files.
+     */
     public BeaconAssociationList(Context context) {
         assFile = new File(context.getFilesDir() + "/associations");
-        String id, uuid, value;
 
         // If the associations file exist, read data from it and insert it to the list
         if (assFile.exists()) {
@@ -49,15 +52,19 @@ public class BeaconAssociationList {
                 e.printStackTrace();
             }
         }
+        else {
+            associations = new JSONArray();
+        }
     }
 
-    public void add (String id, String uuid, String value) throws JSONException {
+    public void add (String id, String uuid, String name, String value) throws JSONException {
         int i = this.contains(id, uuid);
         // The beacon is not in list and must be added.
         if (i == -1) {
             JSONObject json = new JSONObject();
             json.put("id", id);
             json.put("uuid", uuid);
+            json.put("name", name);
             json.put("value", value);
             associations.put(json);
         }
@@ -69,6 +76,8 @@ public class BeaconAssociationList {
             json.put("value", value);
             json.remove("uuid");
             json.put("uuid", uuid);
+            json.remove("name");
+            json.put("name", name);
         }
     }
 
@@ -80,7 +89,7 @@ public class BeaconAssociationList {
         }
     }
 
-    public String get (String id, String uuid) throws JSONException {
+    public String getAssociation (String id, String uuid) throws JSONException {
         int i = this.contains(id, uuid);
         // id not found in list
         if (i == -1)
@@ -88,6 +97,16 @@ public class BeaconAssociationList {
         // found the id, returning the value
         else
             return ((JSONObject) associations.get(i)).get("value").toString();
+    }
+
+    public String getName (String id, String uuid) throws JSONException {
+        int i = this.contains(id, uuid);
+        // id not found in list
+        if (i == -1)
+            return null;
+            // found the id, returning the value
+        else
+            return ((JSONObject) associations.get(i)).get("name").toString();
     }
 
     public JSONObject get (int i) throws JSONException {

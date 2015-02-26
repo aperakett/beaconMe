@@ -5,7 +5,6 @@ import android.app.AlertDialog;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
@@ -34,17 +33,19 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 /**
+ *  Author: Espen Mæland Wilhelmsen, espen.wilhelmsen@gmail.com
+ *
  *  BeaconScanListActivity class
  *
  */
 
 public class BeaconScanListActivity extends Activity implements AbsListView.OnItemClickListener {
-    private BeaconScannerService mService;
-    private FactoryNetworkService mFNetwork;
-    private BeaconScanListAdapter mAdapter;
-    private BeaconList mList;
-    private ListView mListView;
-    private boolean initialized;
+    private BeaconScannerService    mService;
+    private FactoryNetworkService   mFNetwork;
+    private BeaconScanListAdapter   mAdapter;
+    private BeaconList              mList;
+    private ListView                mListView;
+    private boolean                 initialized;
 
 
     @Override
@@ -164,17 +165,21 @@ public class BeaconScanListActivity extends Activity implements AbsListView.OnIt
     }
 
     private void assLocalAdd (final int beaconNumber) {
+        View layout = getLayoutInflater().inflate(R.layout.beacon_add_local_association_alert, (ViewGroup)findViewById(R.id.beacon_add_local));
         AlertDialog.Builder alert = new AlertDialog.Builder(this);
-        alert.setTitle("Add beacon association");
-        alert.setMessage("Type in something to associate with");
+        //alert.setTitle("Add beacon");
+        //alert.setMessage("Type in something to associate with");
 
         //Get user input
-        final EditText input = new EditText(this);
-        alert.setView(input);
+        final EditText inputName = (EditText)layout.findViewById(R.id.beacon_add_local_name);
+        final EditText inputAss  = (EditText)layout.findViewById(R.id.beacon_add_local_ass);
+
+        alert.setView(layout);
         alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int button) {
-                String ass = input.getText().toString();
-                mService.addAssociation(mList.getItem(beaconNumber), ass);
+                String name = inputName.getText().toString();
+                String ass  = inputAss.getText().toString();
+                mService.addAssociation(mList.getItem(beaconNumber), name, ass);
             }
         });
         alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -204,9 +209,7 @@ public class BeaconScanListActivity extends Activity implements AbsListView.OnIt
     }
 
     private void assRemoteAdd (final int beaconNumber) throws JSONException {
-
-//        Spinner spinner = new Spinner(this);
-        View layout = getLayoutInflater().inflate(R.layout.beacon_category, (ViewGroup)findViewById(R.id.categories));
+        View layout = getLayoutInflater().inflate(R.layout.beacon_add_remote_association_alert, (ViewGroup)findViewById(R.id.categories));
         final Spinner spinner = (Spinner) layout.findViewById(R.id.categorySpinner);
         AlertDialog.Builder alert = new AlertDialog.Builder(this);
 
@@ -293,7 +296,7 @@ public class BeaconScanListActivity extends Activity implements AbsListView.OnIt
      *  If the Beaconlist in the BeaconScanner service is specified
      */
     private class BeaconScanListAdapter extends BaseAdapter {
-        private LayoutInflater inflater;
+        private LayoutInflater          inflater;
         private BeaconList              btleDevices;
         private BeaconScannerService    mService;
 
@@ -346,13 +349,22 @@ public class BeaconScanListActivity extends Activity implements AbsListView.OnIt
 
             Beacon beacon = this.getItem(i);
             BluetoothDevice device = beacon.getBtDevice();
-            final String deviceName = device.getName();
 
-            if (deviceName != null && deviceName.length() > 0) {
+            // Set the name of the beacon, first check if the name is set in a local
+            // association, if not, set the name broadcasted by the beacon if any
+            // else set the name to unknown device.
+            final String deviceName = device.getName();
+            final String localDeviceName = mService.getAssociationName(device.getAddress(), null);
+            if (localDeviceName != null) {
+                viewHolder.deviceName.setText(localDeviceName);
+            }
+            else if (deviceName != null && deviceName.length() > 0) {
                 viewHolder.deviceName.setText(deviceName);
-            } else {
+            }
+            else {
                 viewHolder.deviceName.setText(R.string.unknown_device);
             }
+
             viewHolder.deviceAddress.setText(device.getAddress());
             viewHolder.deviceSignal.setText(String.valueOf(beacon.getRssi()));
             viewHolder.deviceUuid.setText("\n" + beacon.getUuid());

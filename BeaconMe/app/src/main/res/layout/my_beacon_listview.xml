@@ -10,8 +10,8 @@
     android:background="@drawable/border">
 
     <ImageView
-        android:layout_height="@dimen/device_list_icon_size"
-        android:layout_width="@dimen/device_list_icon_size"
+        android:layout_height="60dp"
+        android:layout_width="60dp"
         android:paddingTop="5dp"
         android:adjustViewBounds="true"
         android:id="@+id/my_beacon_pic"
@@ -21,9 +21,18 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="@dimen/device_list_my_beacon_font_size"
-        android:id="@+id/my_beacon_value"
+        android:id="@+id/my_beacon_name"
         android:layout_centerHorizontal="true"
-        android:paddingLeft="@dimen/device_list_icon_padding_size"/>
+        android:paddingLeft="64dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="@dimen/device_list_my_beacon_font_size"
+        android:id="@+id/my_beacon_value"
+        android:layout_below="@id/my_beacon_name"
+        android:layout_centerHorizontal="true"
+        android:paddingLeft="64dp"/>
 
     <TextView
         android:layout_width="wrap_content"
@@ -32,7 +41,7 @@
         android:id="@+id/my_beacon_uuid"
         android:layout_below="@id/my_beacon_value"
         android:layout_centerHorizontal="true"
-        android:paddingLeft="@dimen/device_list_icon_padding_size"/>
+        android:paddingLeft="64dp"/>
 
     <TextView
         android:layout_width="wrap_content"
@@ -41,7 +50,7 @@
         android:id="@+id/my_beacon_addr"
         android:layout_below="@id/my_beacon_uuid"
         android:layout_centerHorizontal="true"
-        android:paddingLeft="@dimen/device_list_icon_padding_size"/>
+        android:paddingLeft="64dp"/>
 
 
 
