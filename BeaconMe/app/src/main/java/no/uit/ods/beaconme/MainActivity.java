@@ -50,6 +50,7 @@ public class MainActivity extends ActionBarActivity {
         beaconClient.setUser("admin@server.com", "admin123");
         beaconClient.connectToServer();
 
+        /*
         JSONArray beacons = beaconClient.getBeacons("ABCD:EFGH:IJKL:RSTV", "", 0, "", "");
         if (beacons != null) {
             Toast.makeText(this, beacons.toString(), Toast.LENGTH_LONG).show();
@@ -59,6 +60,19 @@ public class MainActivity extends ActionBarActivity {
 
         if (categories != null) {
             Toast.makeText(this, categories.toString(), Toast.LENGTH_LONG).show();
+        }
+        */
+
+        /*
+        while (mService.getList().getCount() <= 0) {}
+        Beacon beacon = mService.getList().getItem(0);
+        beaconClient.setBeacon("iOS Name", beacon.getUuid(),
+                "www.apple.com", 1, "20:CD:39:A8:3F:98");
+        */
+
+        JSONArray beacons = beaconClient.getBeacons("", "", 3, "", "");
+        if (beacons != null) {
+            Toast.makeText(this, beacons.toString(), Toast.LENGTH_LONG).show();
         }
     }
 

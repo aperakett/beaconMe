@@ -20,6 +20,9 @@ import org.json.JSONArray;
  * <p>
  * Before calling any methods, the caller MUST set a username
  * and password by {@link #setUser(String, String) setUser}.
+ * <p>
+ * The serverUrl attribute for the BeaconClient class is set
+ * accordingly to the server url. Be aware, the url is hardcoded!
  *
  * @author 	Vegard Strand
  * @version	1.0
@@ -35,8 +38,8 @@ public class BeaconClient {
      * Sets the username and password in order to authenticate
      * towards the server.
      *
-     * @param username
-     * @param password
+     * @param username A String representing the user's username (email format)
+     * @param password A String representing the user's password
      */
     public void setUser(String username, String password) {
         this.username = username;
@@ -85,11 +88,12 @@ public class BeaconClient {
      * on an attribute, leave Strings as empty ("") and integers
      * to 0.
      *
-     * @param mac
-     * @param uuid
-     * @param category_id
-     * @param bcn_url
-     * @param name
+     * @param name A String representing the beacon name
+     * @param uuid A String representing the beacon uuid
+     * @param bcn_url A String representing the beacon association url
+     * @param category_id An Integer representing the associated category
+     * @param mac A String representing the beacon mac address
+     *
      * @return null on error, JSONArray with beacons otherwise
      */
     public JSONArray getBeacons(String mac, String uuid, int category_id,
@@ -109,15 +113,43 @@ public class BeaconClient {
     }
 
     /**
+     * Requests to create a new beacon at the back-end server. All paramteres
+     * must be present! Otherwise, it will fail.
+     *
+     * @param name A String representing the beacon name
+     * @param uuid A String representing the beacon uuid
+     * @param bcn_url A String representing the beacon association url
+     * @param category_id An Integer representing the associated category
+     * @param mac A String representing the beacon mac address
+     * @return
+     */
+    public int createBeacon(String name, String uuid, String bcn_url,
+                            int category_id, String mac) {
+        CreateBeacon cBeacon = new CreateBeacon(mac, bcn_url, uuid, name, category_id);
+        Thread t = new Thread(cBeacon);
+        t.start();
+
+        // Sync
+        try {
+            t.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        return cBeacon.getHttpStatus();
+    }
+
+    /**
      * Updates the beacon on mac address. Any other attributes
      * are optional and should be left empty ("" for Strings and
      * 0 for integers).
      *
-     * @param 	uuid
-     * @param 	bcn_url
-     * @param 	category_id
-     * @param 	mac
-     * @param	name
+     * @param name A String representing the beacon name
+     * @param uuid A String representing the beacon uuid
+     * @param bcn_url A String representing the beacon association url
+     * @param category_id An Integer representing the associated category
+     * @param mac A String representing the beacon mac address
+     *
      * @return An integer representing the HTTP status of the
      * request. See
      * <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html">
@@ -125,7 +157,7 @@ public class BeaconClient {
      * </a> for a list of available HTTP statuses. This method only
      * returns 401 Unauthorized, 500 Internal Server Error, or 200 OK.
      */
-    public int setBeacon(String name,String uuid, String bcn_url,
+    public int setBeacon(String name, String uuid, String bcn_url,
                          int category_id, String mac) {
         SetBeacon sBeacon = new SetBeacon(mac, bcn_url, uuid, name, category_id);
         Thread t = new Thread(sBeacon);
@@ -162,6 +194,7 @@ public class BeaconClient {
         return cats.getCategories();
     }
 
+    // Private Methods ...
     private static HttpURLConnection
     createConnection(String url,
                      String method,
@@ -313,6 +346,63 @@ public class BeaconClient {
                     + "&beacon[url]=" + this.bcn_url
                     + "&beacon[category_id]=" + category_id;
             url 	= serverUrl + "/api_set_beacon";
+            try {
+                conn = createConnection(url, "POST", params, false, true, true);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            try {
+                sendPost(params, conn);
+                this.rcode = conn.getResponseCode();
+                if (rcode == 401) {
+                    // Re-authenticate
+                    connectToServer();
+                    sendPost(params, conn);
+                    this.rcode = conn.getResponseCode();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                if(conn != null) {
+                    conn.disconnect();
+                }
+            }
+        }
+
+        public int getHttpStatus() {
+            return this.rcode;
+        }
+    }
+
+    private class CreateBeacon implements Runnable {
+        private volatile int rcode = 0;
+        private String params;
+        private String url;
+        private HttpURLConnection conn;
+
+        private String name;
+        private String uuid;
+        private String mac;
+        private String bcn_url;
+        private int category_id;
+
+        CreateBeacon(String mac, String bcn_url, String uuid, String name, int category_id) {
+            this.mac = mac;
+            this.bcn_url = bcn_url;
+            this.uuid = uuid;
+            this.name = name;
+            this.category_id = category_id;
+        }
+
+        public void run() {
+            params 	= "token=" + token
+                    + "&beacon[name]=" + this.name
+                    + "&beacon[uuid]=" + this.uuid
+                    + "&beacon[mac]=" + this.mac
+                    + "&beacon[url]=" + this.bcn_url
+                    + "&beacon[category_id]=" + category_id;
+            url 	= serverUrl + "/api_create_beacon";
             try {
                 conn = createConnection(url, "POST", params, false, true, true);
             } catch (IOException e) {
