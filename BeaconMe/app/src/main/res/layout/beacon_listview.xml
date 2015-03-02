@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -30,14 +30,15 @@
         android:layout_height="wrap_content"
         android:textSize="@dimen/device_list_font_size"
         android:id="@+id/le_addr"
-        android:layout_gravity="right"/>
+        android:layout_alignParentRight="true"/>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="@dimen/device_list_font_size"
         android:id="@+id/le_rssi"
-        android:layout_gravity="center_horizontal"/>
+        android:paddingLeft="@dimen/device_list_icon_padding_size"
+        android:layout_centerHorizontal="true"/>
 
     <TextView
         android:layout_width="wrap_content"
@@ -45,14 +46,25 @@
         android:textSize="@dimen/device_list_font_size_uuid"
         android:id="@+id/le_uuid"
         android:paddingLeft="@dimen/device_list_icon_padding_size"
-        android:layout_gravity="center_horizontal"/>
+        android:layout_below="@id/le_rssi"
+        android:layout_centerInParent="true"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="@dimen/device_list_font_size_uuid"
+        android:id="@+id/le_uuid_major_minor"
+        android:paddingLeft="@dimen/device_list_icon_padding_size"
+        android:layout_below="@id/le_uuid"
+        android:layout_centerInParent="true"/>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="@dimen/device_list_font_size_uuid"
         android:id="@+id/le_ass"
+        android:layout_below="@id/le_uuid_major_minor"
         android:paddingLeft="@dimen/device_list_icon_padding_size"
-        android:layout_gravity="center_horizontal"/>
+        android:layout_centerInParent="true"/>
 
-</FrameLayout>
+</RelativeLayout>

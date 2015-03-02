@@ -25,7 +25,6 @@ import org.json.JSONObject;
 
 public class MyBeacons extends ActionBarActivity implements AbsListView.OnItemClickListener {
     private BeaconScannerService mService;
-    private FactoryNetworkService mFNetwork;
     private ListView mListView;
     private MyBeaconListAdapter mAdapter;
 
@@ -43,12 +42,6 @@ public class MyBeacons extends ActionBarActivity implements AbsListView.OnItemCl
         IBinder iBinder = bundle.getBinder("binderScan");
         BeaconScannerService.LocalBinder binderScan = (BeaconScannerService.LocalBinder) iBinder;
         mService = binderScan.getService();
-
-        // set up the network service
-        iBinder = bundle.getBinder("binderNetwork");
-        FactoryNetworkService.LocalBinder binderNetwork = (FactoryNetworkService.LocalBinder) iBinder;
-        mFNetwork = binderNetwork.getService();
-
 
         // TODO: generate the listview
         createListView();
@@ -108,26 +101,6 @@ public class MyBeacons extends ActionBarActivity implements AbsListView.OnItemCl
         inflater.inflate(R.menu.menu_context_my_beacons, menu);
     }
 
-//    @Override
-//    public boolean onCreateOptionsMenu(Menu menu) {
-//        // Inflate the menu; this adds items to the action bar if it is present.
-//        return true;
-//    }
-
-//    @Override
-//    public boolean onOptionsItemSelected(MenuItem item) {
-//        // Handle action bar item clicks here. The action bar will
-//        // automatically handle clicks on the Home/Up button, so long
-//        // as you specify a parent activity in AndroidManifest.xml.
-//        int id = item.getItemId();
-//
-//        //noinspection SimplifiableIfStatement
-//        if (id == R.id.action_settings) {
-//            return true;
-//        }
-//        return super.onOptionsItemSelected(item);
-//    }
-
     private class MyBeaconListAdapter extends BaseAdapter {
         private LayoutInflater          inflater;
         private BeaconAssociationList   btleDevices;
@@ -170,6 +143,7 @@ public class MyBeacons extends ActionBarActivity implements AbsListView.OnItemCl
                 viewHolder.deviceValue = (TextView) view.findViewById(R.id.my_beacon_value);
                 viewHolder.deviceId = (TextView) view.findViewById(R.id.my_beacon_addr);
                 viewHolder.deviceUuid = (TextView) view.findViewById(R.id.my_beacon_uuid);
+                viewHolder.deviceUuidMajorMinor = (TextView) view.findViewById(R.id.my_beacon_uuid_major_minor);
                 view.setTag(viewHolder);
             } else {
                 viewHolder = (ViewHolderBeacon) view.getTag();
@@ -181,6 +155,8 @@ public class MyBeacons extends ActionBarActivity implements AbsListView.OnItemCl
                 viewHolder.deviceValue.setText(ass.get("value").toString());
                 viewHolder.deviceId.setText(ass.get("id").toString());
                 viewHolder.deviceUuid.setText(ass.get("uuid").toString());
+                viewHolder.deviceUuidMajorMinor.setText("Major: " + ass.get("major").toString() +
+                                                        ", Minor: " + ass.get("minor").toString());
 
             }
             catch (Exception e) {
@@ -196,6 +172,7 @@ public class MyBeacons extends ActionBarActivity implements AbsListView.OnItemCl
         TextView    deviceName;
         TextView    deviceValue;
         TextView    deviceUuid;
+        TextView    deviceUuidMajorMinor;
         TextView    deviceId;
     }
 }

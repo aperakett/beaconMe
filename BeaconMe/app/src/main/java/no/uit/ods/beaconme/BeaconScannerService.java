@@ -164,7 +164,7 @@ public class BeaconScannerService extends Service {
 
     public void addAssociation(Beacon beacon, String name, String association) {
         try {
-            associationList.add(beacon.getId(), beacon.getUuid(), name, association);
+            associationList.add(beacon, name, association);
         }
         catch (Exception e) {
             Log.e("BeaconScannerService", e.getMessage());
@@ -172,9 +172,9 @@ public class BeaconScannerService extends Service {
     }
 
 
-    public String getAssociation(String id, String uuid) {
+    public String getAssociation(Beacon beacon) {
         try {
-            return associationList.getAssociation(id, uuid);
+            return associationList.getAssociation(beacon);
         }
         catch (Exception e) {
             Log.e("BeaconScannerService", e.getMessage());
@@ -182,9 +182,9 @@ public class BeaconScannerService extends Service {
         return null;
     }
 
-    public String getAssociationName(String id, String uuid) {
+    public String getAssociationName(Beacon beacon) {
         try {
-            return associationList.getName(id, uuid);
+            return associationList.getName(beacon);
         }
         catch (Exception e) {
             Log.e("BeaconScannerService", e.getMessage());
@@ -194,7 +194,7 @@ public class BeaconScannerService extends Service {
 
     public void removeAssociation(String id, String uuid) {
         try {
-            associationList.remove(id, uuid);
+            associationList.remove(id);
         } catch (JSONException e) {
             Log.e("BeaconScannerService", "failed to remove association: " + e.getMessage());
         }
