@@ -50,7 +50,8 @@ public class MainActivity extends ActionBarActivity {
         beaconClient.setUser("admin@server.com", "admin123");
         int status = beaconClient.connectToServer();
         if (status == 401) {
-            Toast.makeText(this, "No access...", Toast.LENGTH_SHORT).show();
+            // Bad username or password
+            Toast.makeText(this, "Invalid username or password.", Toast.LENGTH_SHORT).show();
             return;
         }
 
