@@ -48,7 +48,11 @@ public class MainActivity extends ActionBarActivity {
     public void connectAndGet(View view) {
         BeaconClient beaconClient = new BeaconClient();
         beaconClient.setUser("admin@server.com", "admin123");
-        beaconClient.connectToServer();
+        int status = beaconClient.connectToServer();
+        if (status == 401) {
+            Toast.makeText(this, "No access...", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
         /*
         JSONArray beacons = beaconClient.getBeacons("ABCD:EFGH:IJKL:RSTV", "", 0, "", "");
@@ -63,17 +67,26 @@ public class MainActivity extends ActionBarActivity {
         }
         */
 
-        /*
+
         while (mService.getList().getCount() <= 0) {}
         Beacon beacon = mService.getList().getItem(0);
-        beaconClient.setBeacon("iOS Name", beacon.getUuid(),
-                "www.apple.com", 1, "20:CD:39:A8:3F:98");
-        */
+        status = beaconClient.createBeacon("iOS Name", beacon.getUuid(),
+                "www.apple.com", 1, "20:CD:39:A8:3F:98", "1", "4");
+        if (status == 200) {
+            // Ok
+        } else if (status == 401) {
+            // Bad authentication, call connectToServer to
+            // generate new access token and then try again.
+        } else if (status == 500) {
+            // Internal server error, try again.
+        }
 
-        JSONArray beacons = beaconClient.getBeacons("", "", 3, "", "");
+        /*
+        JSONArray beacons = beaconClient.getBeacons("", "", 3, "", "", "", "");
         if (beacons != null) {
             Toast.makeText(this, beacons.toString(), Toast.LENGTH_LONG).show();
         }
+        */
     }
 
     @Override

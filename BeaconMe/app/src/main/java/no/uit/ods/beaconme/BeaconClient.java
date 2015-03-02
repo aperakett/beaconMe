@@ -1,5 +1,7 @@
 package no.uit.ods.beaconme;
 
+import android.util.Log;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.io.BufferedReader;
@@ -23,9 +25,12 @@ import org.json.JSONArray;
  * <p>
  * The serverUrl attribute for the BeaconClient class is set
  * accordingly to the server url. Be aware, the url is hardcoded!
+ * <p>
+ * Latest Changes (2015-03-02)
+ * - Added support for beacon major/minor attribute
  *
  * @author 	Vegard Strand
- * @version	1.0
+ * @version	1.1
  * @since	2015-02-26
  */
 public class BeaconClient {
@@ -79,12 +84,14 @@ public class BeaconClient {
             e.printStackTrace();
         }
 
+        this.token = cServer.getToken();
+        Log.i("BeaconClient", "Token: " + this.token);
         return cServer.getHttpStatus();
     }
 
     /**
      * Returns a JSONArray of beacons. The caller can search on
-     * any of the given parameters. If you don't wan't to search
+     * any of the given parameters. If you don't want to search
      * on an attribute, leave Strings as empty ("") and integers
      * to 0.
      *
@@ -97,8 +104,9 @@ public class BeaconClient {
      * @return null on error, JSONArray with beacons otherwise
      */
     public JSONArray getBeacons(String mac, String uuid, int category_id,
-                                String bcn_url, String name) {
-        GetBeacons gBeacons = new GetBeacons(mac, bcn_url, uuid, name, category_id);
+                                String bcn_url, String name, String major, String minor) {
+        GetBeacons gBeacons = new GetBeacons(this.token, mac, bcn_url, uuid, name,
+                category_id, major, minor);
         Thread t = new Thread(gBeacons);
         t.start();
 
@@ -124,8 +132,9 @@ public class BeaconClient {
      * @return
      */
     public int createBeacon(String name, String uuid, String bcn_url,
-                            int category_id, String mac) {
-        CreateBeacon cBeacon = new CreateBeacon(mac, bcn_url, uuid, name, category_id);
+                            int category_id, String mac, String major, String minor) {
+        CreateBeacon cBeacon = new CreateBeacon(this.token, mac, bcn_url, uuid, name,
+                category_id, major, minor);
         Thread t = new Thread(cBeacon);
         t.start();
 
@@ -158,8 +167,9 @@ public class BeaconClient {
      * returns 401 Unauthorized, 500 Internal Server Error, or 200 OK.
      */
     public int setBeacon(String name, String uuid, String bcn_url,
-                         int category_id, String mac) {
-        SetBeacon sBeacon = new SetBeacon(mac, bcn_url, uuid, name, category_id);
+                         int category_id, String mac, String major, String minor) {
+        SetBeacon sBeacon = new SetBeacon(this.token, mac, bcn_url, uuid, name,
+                category_id, major, minor);
         Thread t = new Thread(sBeacon);
         t.start();
 
@@ -274,12 +284,19 @@ public class BeaconClient {
         private String uuid;
         private int category_id;
         private String name;
+        private String major;
+        private String minor;
+        private String token;
 
-        GetBeacons(String mac, String bcn_url, String uuid, String name, int category_id) {
+        GetBeacons(String token, String mac, String bcn_url, String uuid, String name,
+            int category_id, String major, String minor) {
             this.mac = mac;
             this.bcn_url = bcn_url;
             this.uuid = uuid;
             this.name = name;
+            this.major = major;
+            this.minor = minor;
+            this.token = token;
             this.category_id = category_id;
         }
 
@@ -287,12 +304,14 @@ public class BeaconClient {
         public void run() {
             try {
                 url 	= serverUrl + "/api_get_beacon";
-                params	= "token=" + token
+                params	= "token=" + this.token
                         + "&beacon[mac]=" + this.mac
                         + "&beacon[url]=" + this.bcn_url
                         + "&beacon[uuid]=" + this.uuid
                         + "&beacon[category_id]=" + this.category_id
-                        + "&beacon[name]=" + this.name;
+                        + "&beacon[name]=" + this.name
+                        + "&beacon[major]=" + this.major
+                        + "&beacon[minor]=" + this.minor;
                 conn    = createConnection(url, "POST", params,
                         false, true, true);
 
@@ -324,27 +343,36 @@ public class BeaconClient {
         private String url;
         private HttpURLConnection conn;
 
-        private String name;
-        private String uuid;
         private String mac;
         private String bcn_url;
+        private String uuid;
         private int category_id;
+        private String name;
+        private String major;
+        private String minor;
+        private String token;
 
-        SetBeacon(String mac, String bcn_url, String uuid, String name, int category_id) {
+        SetBeacon(String token, String mac, String bcn_url, String uuid, String name, int category_id,
+                  String major, String minor) {
             this.mac = mac;
             this.bcn_url = bcn_url;
             this.uuid = uuid;
             this.name = name;
             this.category_id = category_id;
+            this.major = major;
+            this.minor = minor;
+            this.token = token;
         }
 
         public void run() {
-            params 	= "token=" + token
+            params 	= "token=" + this.token
                     + "&beacon[name]=" + this.name
                     + "&beacon[uuid]=" + this.uuid
                     + "&beacon[mac]=" + this.mac
                     + "&beacon[url]=" + this.bcn_url
-                    + "&beacon[category_id]=" + category_id;
+                    + "&beacon[category_id]=" + category_id
+                    + "&beacon[major]=" + this.major
+                    + "&beacon[minor]=" + this.minor;
             url 	= serverUrl + "/api_set_beacon";
             try {
                 conn = createConnection(url, "POST", params, false, true, true);
@@ -355,12 +383,6 @@ public class BeaconClient {
             try {
                 sendPost(params, conn);
                 this.rcode = conn.getResponseCode();
-                if (rcode == 401) {
-                    // Re-authenticate
-                    connectToServer();
-                    sendPost(params, conn);
-                    this.rcode = conn.getResponseCode();
-                }
             } catch (IOException e) {
                 e.printStackTrace();
             } finally {
@@ -381,27 +403,36 @@ public class BeaconClient {
         private String url;
         private HttpURLConnection conn;
 
-        private String name;
-        private String uuid;
         private String mac;
         private String bcn_url;
+        private String uuid;
         private int category_id;
+        private String name;
+        private String major;
+        private String minor;
+        private String token;
 
-        CreateBeacon(String mac, String bcn_url, String uuid, String name, int category_id) {
+        CreateBeacon(String token, String mac, String bcn_url, String uuid, String name, int category_id,
+                     String major, String minor) {
             this.mac = mac;
             this.bcn_url = bcn_url;
             this.uuid = uuid;
             this.name = name;
             this.category_id = category_id;
+            this.major = major;
+            this.minor = minor;
+            this.token = token;
         }
 
         public void run() {
-            params 	= "token=" + token
+            params 	= "token=" + this.token
                     + "&beacon[name]=" + this.name
                     + "&beacon[uuid]=" + this.uuid
                     + "&beacon[mac]=" + this.mac
                     + "&beacon[url]=" + this.bcn_url
-                    + "&beacon[category_id]=" + category_id;
+                    + "&beacon[category_id]=" + category_id
+                    + "&beacon[major]=" + this.major
+                    + "&beacon[minor]=" + this.minor;
             url 	= serverUrl + "/api_create_beacon";
             try {
                 conn = createConnection(url, "POST", params, false, true, true);
@@ -412,12 +443,6 @@ public class BeaconClient {
             try {
                 sendPost(params, conn);
                 this.rcode = conn.getResponseCode();
-                if (rcode == 401) {
-                    // Re-authenticate
-                    connectToServer();
-                    sendPost(params, conn);
-                    this.rcode = conn.getResponseCode();
-                }
             } catch (IOException e) {
                 e.printStackTrace();
             } finally {
@@ -481,6 +506,7 @@ public class BeaconClient {
         private HttpURLConnection conn;
         private String params;
         private JSONObject obj;
+        private String token;
 
         public void run() {
 
@@ -502,9 +528,8 @@ public class BeaconClient {
 
                     // Parse response
                     obj = new JSONObject(res);
-                    token = obj.getString("token");
+                    this.token = obj.getString("token");
                 } else if (conn.getResponseCode() == 401) {
-                    // TODO: Handle unauthorized connection
                     this.rcode = 401;
                 }
             } catch (JSONException e) {
@@ -518,6 +543,7 @@ public class BeaconClient {
             }
         }
 
+        public String getToken() { return this.token; }
         public int getHttpStatus() {
             return this.rcode;
         }
