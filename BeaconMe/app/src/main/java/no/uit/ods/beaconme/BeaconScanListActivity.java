@@ -35,7 +35,8 @@ import java.util.concurrent.TimeUnit;
 /**
  *  Author: Espen Mæland Wilhelmsen, espen.wilhelmsen@gmail.com
  *
- *  BeaconScanListActivity class
+ *  Implements the activity that shows the list of association made on
+ *  the local device.
  *
  */
 
@@ -47,6 +48,17 @@ public class BeaconScanListActivity extends Activity implements AbsListView.OnIt
     private boolean                 initialized;
 
 
+    /**
+     * Automatically called upon activity creation.
+     *
+     * Requires the scanner service bundled as intent- extras.
+     * The scanner service iBinder must be named "binderScan".
+     *
+     * The scanner service is set up and the views are created.
+     *
+     * @param savedInstanceState The bundle the activity is started with, gets
+     *                           automatically assigned.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         if (!initialized) {
@@ -67,11 +79,20 @@ public class BeaconScanListActivity extends Activity implements AbsListView.OnIt
         }
     }
 
+    /**
+     * Upon onDestroy all associations are commited to disk
+     * to make sure none is lost.
+     */
     public void onDestroy () {
         super.onDestroy();
         mService.commitAssociation();
     }
 
+    /**
+     * This function sets up the listview and schedules
+     * periodical updates to the listview. Context menu
+     * are registered.
+     */
     public void createListView () {
 
         // create list and adapter for listview
@@ -121,10 +142,22 @@ public class BeaconScanListActivity extends Activity implements AbsListView.OnIt
     }
 
 
+    /**
+     * Required method for AbsListView.OnItemClickListener.
+     *
+     * Does nothing, just overrides the default method.
+     *
+     */
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
     }
 
+    /**
+     * Launches the item selected on the context menu.
+     *
+     * @param item The menuitem selected in the context menu.
+     * @return boolean indicating method success.
+     */
     public boolean onContextItemSelected(MenuItem item) {
         // Get the beacon number clicked on
         final int beaconNumber = ((AdapterView.AdapterContextMenuInfo) item.getMenuInfo()).position;
@@ -145,12 +178,21 @@ public class BeaconScanListActivity extends Activity implements AbsListView.OnIt
                 }
                 catch (Exception e) {
                     Log.e("BeaconScanListActivity",  "Failed to create association with: " + e.getMessage());
+                    return false;
                 }
                 break;
         }
         return true;
     }
 
+    /**
+     * Creates the context menu, inflates it with the menuoptions in
+     * R.menu.menu_context_device_list.
+     *
+     * @param menu  The menu to inflate menuitems into.
+     * @param v The view
+     * @param menuInfo ConextMenuInfo
+     */
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
@@ -158,11 +200,18 @@ public class BeaconScanListActivity extends Activity implements AbsListView.OnIt
         inflater.inflate(R.menu.menu_context_device_list, menu);
     }
 
+    /**
+     * Adds a local association to the device. It's stored in the scanner service
+     * which again saves it to disk.
+     *
+     * A AlertDialogue is launched giving the user the possiblility of entering a name
+     * for the beacon and an association.
+     *
+     * @param beaconNumber The number of beacon selected from the listview.
+     */
     private void assLocalAdd (final int beaconNumber) {
         View layout = getLayoutInflater().inflate(R.layout.beacon_add_local_association_alert, (ViewGroup)findViewById(R.id.beacon_add_local));
         AlertDialog.Builder alert = new AlertDialog.Builder(this);
-        //alert.setTitle("Add beacon");
-        //alert.setMessage("Type in something to associate with");
 
         //Get user input
         final EditText inputName = (EditText)layout.findViewById(R.id.beacon_add_local_name);
@@ -184,7 +233,14 @@ public class BeaconScanListActivity extends Activity implements AbsListView.OnIt
         alert.show();
     }
 
-
+    /**
+     * Removes a local association from the device. The scanner service
+     * removes the association from it's association list.
+     *
+     * Launches an alert dialogue for the user to confirm deletion.
+     *
+     * @param beaconNumber The number of the beacon the be removed from the list.
+     */
     private void assLocalRemove (final int beaconNumber) {
         AlertDialog.Builder alert = new AlertDialog.Builder(this);
         alert.setTitle("Remove beacon association");
@@ -202,6 +258,13 @@ public class BeaconScanListActivity extends Activity implements AbsListView.OnIt
         alert.show();
     }
 
+    /**
+     *
+     * TODO: save categories to file???
+     * 
+     * @param beaconNumber
+     * @throws JSONException
+     */
     private void assRemoteAdd (final int beaconNumber) throws JSONException {
         View layout = getLayoutInflater().inflate(R.layout.beacon_add_remote_association_alert, (ViewGroup)findViewById(R.id.categories));
         final Spinner spinner = (Spinner) layout.findViewById(R.id.categorySpinner);
@@ -334,6 +397,7 @@ public class BeaconScanListActivity extends Activity implements AbsListView.OnIt
                 viewHolder.deviceSignal = (TextView) view.findViewById(R.id.le_rssi);
                 viewHolder.deviceName = (TextView) view.findViewById(R.id.le_name);
                 viewHolder.deviceUuid = (TextView) view.findViewById(R.id.le_uuid);
+                viewHolder.deviceMajorMinor = (TextView) view.findViewById(R.id.le_uuid_major_minor);
                 viewHolder.deviceAssociation = (TextView) view.findViewById(R.id.le_ass);
                 viewHolder.devicePic = (ImageView) view.findViewById(R.id.le_pic);
                 view.setTag(viewHolder);
@@ -348,7 +412,7 @@ public class BeaconScanListActivity extends Activity implements AbsListView.OnIt
             // association, if not, set the name broadcasted by the beacon if any
             // else set the name to unknown device.
             final String deviceName = device.getName();
-            final String localDeviceName = mService.getAssociationName(device.getAddress(), null);
+            final String localDeviceName = mService.getAssociationName(beacon);
             if (localDeviceName != null) {
                 viewHolder.deviceName.setText(localDeviceName);
             }
@@ -361,13 +425,14 @@ public class BeaconScanListActivity extends Activity implements AbsListView.OnIt
 
             viewHolder.deviceAddress.setText(device.getAddress());
             viewHolder.deviceSignal.setText(String.valueOf(beacon.getRssi()));
-            viewHolder.deviceUuid.setText("\n" + beacon.getUuid());
-            String ass = mService.getAssociation(beacon.getId(), beacon.getUuid());
+            viewHolder.deviceUuid.setText(beacon.getUuid());
+            viewHolder.deviceMajorMinor.setText("Major: " + beacon.getMajor() +
+                                                ", Minor: " + beacon.getMinor());
+            String ass = mService.getAssociation(beacon);
             if (ass == null)
                 ass = "Not Associated";
-            viewHolder.deviceAssociation.setText("\n\n" + ass);
+            viewHolder.deviceAssociation.setText(ass);
 
-            // TODO: fix color scheme for beacons in range (green) and out of range (gray?)
             if (!mService.getList().contains(beacon.getId()))
                 viewHolder.devicePic.setImageResource(R.drawable.beacon_not_in_range);
             else
@@ -382,6 +447,7 @@ public class BeaconScanListActivity extends Activity implements AbsListView.OnIt
         TextView    deviceSignal;
         TextView    deviceAddress;
         TextView    deviceUuid;
+        TextView    deviceMajorMinor;
         TextView    deviceAssociation;
     }
 

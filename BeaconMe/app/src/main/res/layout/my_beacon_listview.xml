@@ -47,11 +47,17 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="@dimen/device_list_font_size"
-        android:id="@+id/my_beacon_addr"
+        android:id="@+id/my_beacon_uuid_major_minor"
         android:layout_below="@id/my_beacon_uuid"
         android:layout_centerHorizontal="true"
         android:paddingLeft="64dp"/>
 
-
-
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="@dimen/device_list_font_size"
+        android:id="@+id/my_beacon_addr"
+        android:layout_below="@id/my_beacon_uuid_major_minor"
+        android:layout_centerHorizontal="true"
+        android:paddingLeft="64dp"/>
 </RelativeLayout>
