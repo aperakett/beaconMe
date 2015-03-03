@@ -1,7 +1,5 @@
 package no.uit.ods.beaconme;
 
-import android.util.Log;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.io.BufferedReader;
@@ -11,7 +9,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-
 import org.json.JSONArray;
 
 /**
@@ -20,315 +17,344 @@ import org.json.JSONArray;
  * requests are verified at the server by session tokens.
  * Session tokens are automatically handled by this very class.
  * <p>
- * Before calling any methods, the caller MUST set a username
- * and password by {@link #setUser(String, String) setUser}.
- * <p>
  * The serverUrl attribute for the BeaconClient class is set
  * accordingly to the server url. Be aware, the url is hardcoded!
  * <p>
- * Latest Changes (2015-03-02)
+ * Latest Changes
  * - Added support for beacon major/minor attribute
+ * - Refactor Class, caller can now set username and password on construction. The class also
+ *   handles the first time connection - i.e. setup token for user.
+ * - All method calls now requests access to back-end before performing the request.
  *
- * @author 	Vegard Strand
+ * @author 	Vegard Strand (vst030@post.uit.no)
  * @version	1.1
  * @since	2015-02-26
  */
 public class BeaconClient {
-    private String  token 		= "";
-    private String  username 	= "";
-    private String  password 	= "";
-    private String  serverUrl   = "http://192.168.1.202:3000";
+    private String  username 	    = "";
+    private String  password 	    = "";
+    private String  serverUrl       = "http://192.168.1.202:3000";
 
     /**
-     * Sets the username and password in order to authenticate
-     * towards the server.
      *
-     * @param username A String representing the user's username (email format)
-     * @param password A String representing the user's password
+     * @param username in email format
+     * @param password
+     * @throws InterruptedException
      */
-    public void setUser(String username, String password) {
+    BeaconClient(String username, String password) throws InterruptedException {
+
         this.username = username;
         this.password = password;
+
     }
 
     /**
-     * Establishes a first time connection to the server. The
-     * server expects to authenticate the user with a password
-     * and a username.
-     * <p>
-     * On successful authentication the server returns a session
-     * token which is stored internally in this very class. The
-     * token is used to validate all commands that changes data.
-     * (Note: the caller of these methods does not have to worry
-     * about token expiration etc. This is handled automatically)
+     * Returns a JSONArray with a collection of JSONObjects representing beacons.
+     * If no beacons were found on search parameters, the method returns an empty
+     * array. If no connection or error, it returns null.
      *
-     * @return An integer representing the HTTP status of the
-     * request. See
-     * <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html">
-     * http://w3.org/Protocols
-     * </a> for a list of available HTTP statuses. This method only
-     * returns 401 Unauthorized or 200 OK.
-     * <p>
-     * Unauthorized means that either the username or password is
-     * blank or incorrect.
+     * @param mac           String
+     * @param uuid          String
+     * @param categoryId    Integer
+     * @param beaconUrl     String
+     * @param name          String
+     * @param major         String
+     * @param minor         String
+     * @return JSONArray with JSONObjects representing beacons
+     * @throws InterruptedException
      */
-    public int connectToServer() {
-        ConnectToServer cServer = new ConnectToServer();
-        Thread t = new Thread(cServer);
+    public JSONArray getBeacons(String mac, String uuid, int categoryId,
+                                String beaconUrl, String name, String major, String minor)
+    throws InterruptedException {
+
+        AuthToServer    authToServer;
+        GetBeacons      getBeacons;
+        Thread          t;
+        int             status;
+        String          token;
+
+        authToServer = new AuthToServer();
+        t = new Thread(authToServer);
         t.start();
 
         // Sync
-        try {
-            t.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        t.join();
+
+        status = authToServer.getHttpStatus();
+        if (status != 200) {
+
+            // An error has occurred, either 401 unauthorized, 500 internal server
+            // error, 404 not found, etc.
+            return null;
+
         }
 
-        this.token = cServer.getToken();
-        Log.i("BeaconClient", "Token: " + this.token);
-        return cServer.getHttpStatus();
+        token       = authToServer.getToken();
+        getBeacons  = new GetBeacons(token, mac, beaconUrl, uuid,
+                                     name, categoryId, major, minor);
+        t = new Thread(getBeacons);
+        t.start();
+
+        // Sync
+        t.join();
+        return getBeacons.getBeacons();
+
     }
 
     /**
-     * Returns a JSONArray of beacons. The caller can search on
-     * any of the given parameters. If you don't want to search
-     * on an attribute, leave Strings as empty ("") and integers
-     * to 0.
+     * Creates a new beacon on back-end system. All arguments are required.
      *
-     * @param name A String representing the beacon name
-     * @param uuid A String representing the beacon uuid
-     * @param bcn_url A String representing the beacon association url
-     * @param category_id An Integer representing the associated category
-     * @param mac A String representing the beacon mac address
-     *
-     * @return null on error, JSONArray with beacons otherwise
+     * @param name          String
+     * @param uuid          String
+     * @param beaconUrl     String
+     * @param categoryId    Integer
+     * @param mac           String
+     * @param major         String
+     * @param minor         String
+     * @return an integer representing the status code of the request
      */
-    public JSONArray getBeacons(String mac, String uuid, int category_id,
-                                String bcn_url, String name, String major, String minor) {
-        GetBeacons gBeacons = new GetBeacons(this.token, mac, bcn_url, uuid, name,
-                category_id, major, minor);
-        Thread t = new Thread(gBeacons);
+    public int createBeacon(String name, String uuid, String beaconUrl,
+                            int categoryId, String mac, String major, String minor)
+    throws InterruptedException {
+
+        AuthToServer    authToServer;
+        CreateBeacon    createBeacon;
+        Thread          t;
+        int             status;
+        String          token;
+
+        authToServer = new AuthToServer();
+        t = new Thread(authToServer);
         t.start();
 
         // Sync
-        try {
-            t.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        t.join();
+
+        status = authToServer.getHttpStatus();
+        if (status != 200) {
+
+            // An error has occurred, either 401 unauthorized, 500 internal server
+            // error, 404 not found, etc.
+            return status;
+
         }
 
-        return gBeacons.getBeacons();
+        token           = authToServer.getToken();
+        createBeacon    = new CreateBeacon(token, mac, beaconUrl, uuid, name,
+                                           categoryId, major, minor);
+        t = new Thread(createBeacon);
+        t.start();
+
+        // Sync
+        t.join();
+        return createBeacon.getHttpStatus();
+
     }
 
     /**
-     * Requests to create a new beacon at the back-end server. All paramteres
-     * must be present! Otherwise, it will fail.
+     * Update a beacon on back-end system. All arguments are optional. However,
+     * the more arguments, the better chance of finding and updating the beacon.
      *
-     * @param name A String representing the beacon name
-     * @param uuid A String representing the beacon uuid
-     * @param bcn_url A String representing the beacon association url
-     * @param category_id An Integer representing the associated category
-     * @param mac A String representing the beacon mac address
-     * @return
+     * @param name          String
+     * @param uuid          String
+     * @param beaconUrl     String
+     * @param categoryId    Integer
+     * @param mac           String
+     * @param major         String
+     * @param minor         String
+     * @return an integer representing the status code of the request
      */
-    public int createBeacon(String name, String uuid, String bcn_url,
-                            int category_id, String mac, String major, String minor) {
-        CreateBeacon cBeacon = new CreateBeacon(this.token, mac, bcn_url, uuid, name,
-                category_id, major, minor);
-        Thread t = new Thread(cBeacon);
+    public int setBeacon(String name, String uuid, String beaconUrl,
+                         int categoryId, String mac, String major, String minor)
+    throws InterruptedException {
+
+        AuthToServer    authToServer;
+        SetBeacon       setBeacon;
+        Thread          t;
+        int             status;
+        String          token;
+
+        authToServer = new AuthToServer();
+        t = new Thread(authToServer);
         t.start();
 
         // Sync
-        try {
-            t.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        t.join();
+
+        status = authToServer.getHttpStatus();
+        if (status != 200) {
+
+            // An error has occurred, either 401 unauthorized, 500 internal server
+            // error, 404 not found, etc.
+            return status;
+
         }
 
-        return cBeacon.getHttpStatus();
+        token       = authToServer.getToken();
+        setBeacon   = new SetBeacon(token, mac, beaconUrl, uuid, name,
+                                    categoryId, major, minor);
+        t = new Thread(setBeacon);
+        t.start();
+
+        // Sync
+        t.join();
+        return setBeacon.getHttpStatus();
+
     }
 
     /**
-     * Updates the beacon on mac address. Any other attributes
-     * are optional and should be left empty ("" for Strings and
-     * 0 for integers).
+     * Returns categories found on back-end system.
      *
-     * @param name A String representing the beacon name
-     * @param uuid A String representing the beacon uuid
-     * @param bcn_url A String representing the beacon association url
-     * @param category_id An Integer representing the associated category
-     * @param mac A String representing the beacon mac address
-     *
-     * @return An integer representing the HTTP status of the
-     * request. See
-     * <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html">
-     * http://w3.org/Protocols
-     * </a> for a list of available HTTP statuses. This method only
-     * returns 401 Unauthorized, 500 Internal Server Error, or 200 OK.
+     * @return JSONArray representing the categories, null on error
      */
-    public int setBeacon(String name, String uuid, String bcn_url,
-                         int category_id, String mac, String major, String minor) {
-        SetBeacon sBeacon = new SetBeacon(this.token, mac, bcn_url, uuid, name,
-                category_id, major, minor);
-        Thread t = new Thread(sBeacon);
+    public JSONArray getCategories() throws InterruptedException {
+
+        GetCategories   getCategories;
+        Thread          t;
+
+        getCategories = new GetCategories();
+        t = new Thread(getCategories);
         t.start();
 
         // Sync
-        try {
-            t.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        t.join();
 
-        return sBeacon.getHttpStatus();
+        return getCategories.getCategories();
+
     }
 
-    /**
-     * Fetches all categories (id, subject) from server.
-     * Returns data as JSONArray.
-     *
-     * @return JSONArray with all categories, null on error.
-     */
-    public JSONArray getCategories() {
-        GetCategories cats = new GetCategories();
-        Thread t = new Thread(cats);
-        t.start();
+    private static HttpURLConnection createConnection(String url, String method,
+                                                      String params, boolean useCache,
+                                                      boolean doInput, boolean doOutput)
+    throws IOException {
 
-        // Sync
-        try {
-            t.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        return cats.getCategories();
-    }
-
-    // Private Methods ...
-    private static HttpURLConnection
-    createConnection(String url,
-                     String method,
-                     String params,
-                     boolean useCache,
-                     boolean doInput,
-                     boolean doOutput)
-            throws IOException
-    {
-        URL 				mUrl = null;
-        HttpURLConnection 	conn = null;
+        URL 				mUrl;
+        HttpURLConnection 	conn;
 
         mUrl = new URL(url);
         conn = (HttpURLConnection) mUrl.openConnection();
         conn.setRequestMethod(method);
         conn.setRequestProperty("Content-Length", "" +
-                Integer.toString(params.getBytes().length));
+                                Integer.toString(params.getBytes().length));
         conn.setUseCaches(useCache);
         conn.setDoInput(doInput);
         conn.setDoOutput(doOutput);
 
         return conn;
+
     }
 
-    private static String readResponse(InputStream inputStream)
-            throws IOException {
-        BufferedReader rd = new BufferedReader(new
-                InputStreamReader(inputStream));
-        String line;
-        StringBuffer response = new StringBuffer();
-        while((line = rd.readLine()) != null) {
+    private static String readResponse(InputStream inputStream) throws IOException {
+
+        BufferedReader  reader;
+        String          line;
+        StringBuffer    response;
+
+        reader      = new BufferedReader(new InputStreamReader(inputStream));
+        response    = new StringBuffer();
+
+        while((line = reader.readLine()) != null) {
             response.append(line);
         }
-        rd.close();
+
+        reader.close();
         return response.toString();
+
     }
 
-    private static void sendPost(String params, HttpURLConnection conn)
-            throws IOException {
-        DataOutputStream wr = new DataOutputStream(
-                conn.getOutputStream());
-        wr.writeBytes(params);
-        wr.flush();
-        wr.close();
+    private static void sendPostRequest(String params, HttpURLConnection conn) throws IOException {
+
+        DataOutputStream writer;
+
+        writer = new DataOutputStream(conn.getOutputStream());
+        writer.writeBytes(params);
+        writer.flush();
+        writer.close();
+
     }
 
-    /**
-     *
-     * @param conn
-     * @return
-     * @throws IOException
-     */
-    private String sendGet(HttpURLConnection conn)
-            throws IOException {
+    private String sendGetRequest(HttpURLConnection conn) throws IOException {
+
+        BufferedReader  inStream;
+        String          inputLine;
+        StringBuffer    response;
+
         conn.setRequestMethod("GET");
         conn.setDoOutput(false);
-        BufferedReader in = new BufferedReader(
-                new InputStreamReader(conn.getInputStream()));
-        String inputLine;
-        StringBuffer response = new StringBuffer();
 
-        while ((inputLine = in.readLine()) != null) {
+        inStream    = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+        response    = new StringBuffer();
+
+        while ((inputLine = inStream.readLine()) != null) {
             response.append(inputLine);
         }
-        in.close();
+
+        inStream.close();
         return response.toString();
+
     }
 
     private class GetBeacons implements Runnable {
-        private String url;
-        private HttpURLConnection conn;
-        private String params;
-        private volatile JSONArray beacons;
 
-        private String mac;
-        private String bcn_url;
-        private String uuid;
-        private int category_id;
-        private String name;
-        private String major;
-        private String minor;
-        private String token;
+        private String              url;
+        private HttpURLConnection   conn;
+        private String              params;
+        private JSONArray           beacons;
+        private String              mac;
+        private String              bcn_url;
+        private String              uuid;
+        private int                 category_id;
+        private String              name;
+        private String              major;
+        private String              minor;
+        private String              token;
 
         GetBeacons(String token, String mac, String bcn_url, String uuid, String name,
-            int category_id, String major, String minor) {
-            this.mac = mac;
-            this.bcn_url = bcn_url;
-            this.uuid = uuid;
-            this.name = name;
-            this.major = major;
-            this.minor = minor;
-            this.token = token;
-            this.category_id = category_id;
+                   int category_id, String major, String minor) {
+
+            this.mac            = mac;
+            this.bcn_url        = bcn_url;
+            this.uuid           = uuid;
+            this.name           = name;
+            this.major          = major;
+            this.minor          = minor;
+            this.token          = token;
+            this.category_id    = category_id;
+
         }
 
         @Override
         public void run() {
             try {
-                url 	= serverUrl + "/api_get_beacon";
-                params	= "token=" + this.token
-                        + "&beacon[mac]=" + this.mac
-                        + "&beacon[url]=" + this.bcn_url
-                        + "&beacon[uuid]=" + this.uuid
-                        + "&beacon[category_id]=" + this.category_id
-                        + "&beacon[name]=" + this.name
-                        + "&beacon[major]=" + this.major
-                        + "&beacon[minor]=" + this.minor;
-                conn    = createConnection(url, "POST", params,
-                        false, true, true);
+                url 	= serverUrl                 + "/api_get_beacon";
+                params	= "token="                  + this.token
+                        + "&beacon[mac]="           + this.mac
+                        + "&beacon[url]="           + this.bcn_url
+                        + "&beacon[uuid]="          + this.uuid
+                        + "&beacon[category_id]="   + this.category_id
+                        + "&beacon[name]="          + this.name
+                        + "&beacon[major]="         + this.major
+                        + "&beacon[minor]="         + this.minor;
+                conn    = createConnection(url, "POST", params, false, true, true);
 
-                sendPost(params, conn);
-                int rcode = conn.getResponseCode();
-                if (rcode == 200) {
-                    String res = readResponse(conn.getInputStream());
-                    this.beacons = new JSONArray(res);
+                sendPostRequest(params, conn);
+                if (conn.getResponseCode() == 200) {
+
+                    String response = readResponse(conn.getInputStream());
+                    this.beacons    = new JSONArray(response);
+
                 }
-            } catch (JSONException e) {
+            } catch (JSONException | IOException e) {
+
                 e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
+                this.beacons = null;
+
             } finally {
+
                 if(conn != null) {
                     conn.disconnect();
                 }
+
             }
         }
 
@@ -338,57 +364,61 @@ public class BeaconClient {
     }
 
     private class SetBeacon implements Runnable {
-        private volatile int rcode = 0;
-        private String params;
-        private String url;
-        private HttpURLConnection conn;
 
-        private String mac;
-        private String bcn_url;
-        private String uuid;
-        private int category_id;
-        private String name;
-        private String major;
-        private String minor;
-        private String token;
+        private int                 rcode;
+        private String              params;
+        private String              url;
+        private HttpURLConnection   conn;
+        private String              mac;
+        private String              beaconUrl;
+        private String              uuid;
+        private int                 categoryId;
+        private String              name;
+        private String              major;
+        private String              minor;
+        private String              token;
 
-        SetBeacon(String token, String mac, String bcn_url, String uuid, String name, int category_id,
-                  String major, String minor) {
-            this.mac = mac;
-            this.bcn_url = bcn_url;
-            this.uuid = uuid;
-            this.name = name;
-            this.category_id = category_id;
-            this.major = major;
-            this.minor = minor;
-            this.token = token;
+        SetBeacon(String token, String mac, String beaconUrl, String uuid, String name,
+                  int categoryId, String major, String minor) {
+
+            this.mac        = mac;
+            this.beaconUrl  = beaconUrl;
+            this.uuid       = uuid;
+            this.name       = name;
+            this.categoryId = categoryId;
+            this.major      = major;
+            this.minor      = minor;
+            this.token      = token;
+
         }
 
         public void run() {
-            params 	= "token=" + this.token
-                    + "&beacon[name]=" + this.name
-                    + "&beacon[uuid]=" + this.uuid
-                    + "&beacon[mac]=" + this.mac
-                    + "&beacon[url]=" + this.bcn_url
-                    + "&beacon[category_id]=" + category_id
-                    + "&beacon[major]=" + this.major
-                    + "&beacon[minor]=" + this.minor;
-            url 	= serverUrl + "/api_set_beacon";
             try {
-                conn = createConnection(url, "POST", params, false, true, true);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+                params = "token="                   + this.token
+                       + "&beacon[name]="           + this.name
+                       + "&beacon[uuid]="           + this.uuid
+                       + "&beacon[mac]="            + this.mac
+                       + "&beacon[url]="            + this.beaconUrl
+                       + "&beacon[category_id]="    + this.categoryId
+                       + "&beacon[major]="          + this.major
+                       + "&beacon[minor]="          + this.minor;
+                url    = serverUrl                  + "/api_set_beacon";
+                conn   = createConnection(url, "POST", params, false, true, true);
 
-            try {
-                sendPost(params, conn);
+                sendPostRequest(params, conn);
                 this.rcode = conn.getResponseCode();
+
             } catch (IOException e) {
+
                 e.printStackTrace();
+                this.rcode = 500; // Internal Server Error
+
             } finally {
-                if(conn != null) {
+
+                if (conn != null) {
                     conn.disconnect();
                 }
+
             }
         }
 
@@ -398,57 +428,59 @@ public class BeaconClient {
     }
 
     private class CreateBeacon implements Runnable {
-        private volatile int rcode = 0;
-        private String params;
-        private String url;
-        private HttpURLConnection conn;
+        private int                 rcode;
+        private String              params;
+        private String              url;
+        private HttpURLConnection   conn;
+        private String              mac;
+        private String              beaconUrl;
+        private String              uuid;
+        private int                 categoryId;
+        private String              name;
+        private String              major;
+        private String              minor;
+        private String              token;
 
-        private String mac;
-        private String bcn_url;
-        private String uuid;
-        private int category_id;
-        private String name;
-        private String major;
-        private String minor;
-        private String token;
+        CreateBeacon(String token, String mac, String beaconUrl, String uuid, String name,
+                     int categoryId, String major, String minor) {
 
-        CreateBeacon(String token, String mac, String bcn_url, String uuid, String name, int category_id,
-                     String major, String minor) {
-            this.mac = mac;
-            this.bcn_url = bcn_url;
-            this.uuid = uuid;
-            this.name = name;
-            this.category_id = category_id;
-            this.major = major;
-            this.minor = minor;
-            this.token = token;
+            this.mac        = mac;
+            this.beaconUrl  = beaconUrl;
+            this.uuid       = uuid;
+            this.name       = name;
+            this.categoryId = categoryId;
+            this.major      = major;
+            this.minor      = minor;
+            this.token      = token;
+
         }
 
         public void run() {
-            params 	= "token=" + this.token
-                    + "&beacon[name]=" + this.name
-                    + "&beacon[uuid]=" + this.uuid
-                    + "&beacon[mac]=" + this.mac
-                    + "&beacon[url]=" + this.bcn_url
-                    + "&beacon[category_id]=" + category_id
-                    + "&beacon[major]=" + this.major
-                    + "&beacon[minor]=" + this.minor;
-            url 	= serverUrl + "/api_create_beacon";
             try {
-                conn = createConnection(url, "POST", params, false, true, true);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+                params = "token="                   + this.token
+                       + "&beacon[name]="           + this.name
+                       + "&beacon[uuid]="           + this.uuid
+                       + "&beacon[mac]="            + this.mac
+                       + "&beacon[url]="            + this.beaconUrl
+                       + "&beacon[category_id]="    + this.categoryId
+                       + "&beacon[major]="          + this.major
+                       + "&beacon[minor]="          + this.minor;
+                url    = serverUrl                  + "/api_create_beacon";
+                conn   = createConnection(url, "POST", params, false, true, true);
 
-            try {
-                sendPost(params, conn);
+                sendPostRequest(params, conn);
                 this.rcode = conn.getResponseCode();
+
             } catch (IOException e) {
+
                 e.printStackTrace();
+
             } finally {
-                if(conn != null) {
+
+                if (conn != null) {
                     conn.disconnect();
                 }
+
             }
         }
 
@@ -458,40 +490,35 @@ public class BeaconClient {
     }
 
     private class GetCategories implements Runnable {
-        private volatile JSONArray categories;
-        private String url;
-        private HttpURLConnection conn;
-        private String response;
-        private int rcode;
+
+        private JSONArray           categories;
+        private String              url;
+        private HttpURLConnection   conn;
+        private String              response;
 
         @Override
         public void run() {
-            url = serverUrl + "/api_get_categories";
             try {
-                conn = createConnection(url, "GET", "", false, true, true);
-            } catch (IOException e) {
+                url         = serverUrl + "/api_get_categories";
+                conn        = createConnection(url, "GET", "", false, true, true);
+                response    = sendGetRequest(conn);
+
+                if (conn.getResponseCode() == 200) {
+
+                    this.categories = new JSONArray(response);
+
+                }
+            } catch (IOException | JSONException e) {
+
                 e.printStackTrace();
                 this.categories = null;
-                if(conn != null) {
-                    conn.disconnect();
-                }
-                return;
-            }
 
-            try {
-                response = sendGet(conn);
-                rcode = conn.getResponseCode();
-                if (rcode == 200) {
-                    this.categories = new JSONArray(response);
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (JSONException e) {
-                e.printStackTrace();
             } finally {
+
                 if(conn != null) {
                     conn.disconnect();
                 }
+
             }
         }
 
@@ -500,18 +527,18 @@ public class BeaconClient {
         }
     }
 
-    private class ConnectToServer implements Runnable {
-        private volatile int rcode = 0;
-        private String url;
-        private HttpURLConnection conn;
-        private String params;
-        private JSONObject obj;
-        private String token;
+    private class AuthToServer implements Runnable {
+
+        private int                 rcode;
+        private String              url;
+        private HttpURLConnection   conn;
+        private String              params;
+        private JSONObject          obj;
+        private String              token;
 
         public void run() {
-
             if (username == "" || password == "") {
-                this.rcode = 401;
+                this.rcode = 401; // Unauthorized
                 return;
             }
 
@@ -521,30 +548,31 @@ public class BeaconClient {
                         + "&user[password]=" + password;
                 conn 	= createConnection(url, "POST", params, false, true, true);
 
-                sendPost(params, conn);
+                sendPostRequest(params, conn);
                 this.rcode = conn.getResponseCode();
                 if (this.rcode == 200) {
-                    String res = readResponse(conn.getInputStream());
 
-                    // Parse response
-                    obj = new JSONObject(res);
-                    this.token = obj.getString("token");
-                } else if (conn.getResponseCode() == 401) {
-                    this.rcode = 401;
+                    String res  = readResponse(conn.getInputStream());
+                    obj         = new JSONObject(res);
+                    this.token  = obj.getString("token");
+
                 }
-            } catch (JSONException e) {
+            } catch (JSONException | IOException e) {
+
                 e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
+                this.rcode = 500; // Internal Server Error
+
             } finally {
+
                 if (conn != null) {
                     conn.disconnect();
                 }
+
             }
         }
 
-        public String getToken() { return this.token; }
-        public int getHttpStatus() {
+        public String   getToken()      { return this.token; }
+        public int      getHttpStatus() {
             return this.rcode;
         }
     }
