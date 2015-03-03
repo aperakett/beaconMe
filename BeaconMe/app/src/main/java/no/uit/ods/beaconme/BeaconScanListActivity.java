@@ -5,8 +5,10 @@ import android.app.AlertDialog;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.text.style.ForegroundColorSpan;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
@@ -23,9 +25,14 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -266,19 +273,38 @@ public class BeaconScanListActivity extends Activity implements AbsListView.OnIt
      * @throws JSONException
      */
     private void assRemoteAdd (final int beaconNumber) throws JSONException {
+        final BeaconClient bClient = new BeaconClient();
+        bClient.setUser("admin@server.com", "admin123");
+
+        JSONObject beaconInfoBackend = null;
+
+        Integer conStatus = bClient.connectToServer();
+        if (conStatus != 200) {
+            Log.i("BeaconScanListActivity", "Failed to connect to server");
+            Toast.makeText(getApplicationContext(), "Failed to connect to server", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+//        final JSONArray categories = new JSONArray(new String("[{\"id\":1,\"topic\":\"Automobile\"},{\"id\":2,\"topic\":\"topic\"},{\"id\":3,\"topic\":\"Clothes\"},{\"id\":4,\"topic\":\"Games\"},{\"id\":10,\"topic\":\"Cars\"},{\"id\":11,\"topic\":\"Animals\"},{\"id\":12,\"topic\":\"Test1\"}]"));
+        // Fetch categories from back- end, if this fails, notify user and abort
+        final JSONArray categories = bClient.getCategories();
+        if (categories == null) {
+            Log.i("BeaconScanListActivity", "Failed to fetch categories from server");
+            Toast.makeText(getApplicationContext(), "Failed to fetch categories from server", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         View layout = getLayoutInflater().inflate(R.layout.beacon_add_remote_association_alert, (ViewGroup)findViewById(R.id.categories));
         final Spinner spinner = (Spinner) layout.findViewById(R.id.categorySpinner);
         AlertDialog.Builder alert = new AlertDialog.Builder(this);
 
-        final JSONArray categories = new JSONArray(new String("[{\"id\":1,\"subject\":\"Automobile\"},{\"id\":2,\"subject\":\"Sport\"},{\"id\":3,\"subject\":\"Clothes\"},{\"id\":4,\"subject\":\"Games\"},{\"id\":10,\"subject\":\"Cars\"},{\"id\":11,\"subject\":\"Animals\"},{\"id\":12,\"subject\":\"Test1\"}]"));
-//        final JSONArray categories = mFNetwork.getCategories().get("categories"));
         final ArrayList<String> list = new ArrayList<String>();
 
-        // Fetch categories from back- end
+        // Add categories to a list used in the spinner
         try {
             for (int i = 0; i < categories.length(); i++) {
-                    String subject = ((JSONObject)categories.get(i)).getString("subject").toString();
-                    list.add(subject);
+                    String topic = ((JSONObject)categories.get(i)).getString("topic").toString();
+                    list.add(topic);
             }
         } catch (Exception e) {
             Log.e("BeaconScanListActivity", "assRemoteAdd() failed parsing categories with: " + e.getMessage());
@@ -299,19 +325,27 @@ public class BeaconScanListActivity extends Activity implements AbsListView.OnIt
             beaconInfo.append("ID:\n" + beacon.getId() + "\nUUID:\n" + beacon.getUuid());
         }
 
-        try {
-            // get information about beacon from backend
-//            JSONObject beaconInfoBackend = mFNetwork.getBeacon(beacon.getId());
-//            beaconInfo.append("\nAssociated to:\n" + beaconInfoBackend.get("url").toString());
+        // attempt to get beaconinformation from the backend system
+        final JSONArray beaconHits = bClient.getBeacons(beacon.getId(), beacon.getUuid(), 0, "", "", String.valueOf(beacon.getMajor()), String.valueOf(beacon.getMinor()));
+        if (beaconHits.length() > 0) {
+            beaconInfoBackend = beaconHits.getJSONObject(0);
+            beaconInfo.append("\n\nBeacon Name:\n" + beaconInfoBackend.get("name") + "\nAssociated to:\n" + beaconInfoBackend.get("url").toString());
         }
-        catch (Exception e) {
-            Log.e("BeaconScanListActivity", "Failed getting beaconinfo from backend: " + e.getMessage());
-        }
+
         textView.setText(beaconInfo.toString());
         alert.setView(spinner);
 
-        // get the edittext where the new association is expected
+        // get the edittext where the new association is expected, and fill in fields with
+        // the information fetched from server about beacon if it exist
         final EditText inputAssociation = (EditText) layout.findViewById(R.id.associationInput);
+        final EditText inputAssociationName = (EditText) layout.findViewById(R.id.associationInputName);
+        try {
+            inputAssociationName.setText(beaconInfoBackend.get("name").toString());
+            inputAssociation.setText(beaconInfoBackend.get("url").toString());
+        }
+        catch (Exception e) {
+            Log.i("BeaconScanListActivity", "Beacon is unknown to backend");
+        }
 
         //set the cancel- button
         alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -321,15 +355,39 @@ public class BeaconScanListActivity extends Activity implements AbsListView.OnIt
         //set the OK- button
         alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int button) {
+                Integer retval = 0;
                 String inAssStr = inputAssociation.getText().toString();
-                int t = -1;
+                String inAssNameStr = inputAssociationName.getText().toString();
+
+                int cat = -1;
                 try {
-                    t = Integer.valueOf(((JSONObject)categories.get(list.indexOf(spinner.getSelectedItem().toString()))).get("id").toString());
+                    cat = Integer.valueOf(((JSONObject)categories.get(list.indexOf(spinner.getSelectedItem().toString()))).get("id").toString());
                 } catch (JSONException e) {
                     Log.e("BeaconScanListActivity", "Failed getting categorynumber from JSONArray with: " + e.getMessage());
                 }
-                Log.e("BeaconScanListActivity", "category id: " + String.valueOf(t));
-//                mFNetwork.setBeacon(beacon.getUuid(), inAssStr, t, beacon.getId());
+                Log.i("BeaconScanListActivity", "category id: " + String.valueOf(cat));
+
+                // if the beacon is not allready registered do this:
+                if (beaconHits.length() == 0)
+                    retval = bClient.createBeacon(inAssNameStr,
+                                         beacon.getUuid(),
+                                         inAssStr,
+                                         cat,
+                                         beacon.getId(),
+                                         String.valueOf(beacon.getMajor()),
+                                         String.valueOf(beacon.getMinor()));
+                // if the beacon is registered, change it to new values
+                else
+                    retval = bClient.setBeacon(inAssNameStr,
+                                         beacon.getUuid(),
+                                         inAssStr,
+                                         cat,
+                                         beacon.getId(),
+                                         String.valueOf(beacon.getMajor()),
+                                         String.valueOf(beacon.getMinor()));
+
+                if (retval != 200)
+                    Toast.makeText(getApplicationContext(), "Failed to update beacon! (" + String.valueOf(retval) + ")", Toast.LENGTH_SHORT).show();
 
             }
         });
@@ -393,12 +451,9 @@ public class BeaconScanListActivity extends Activity implements AbsListView.OnIt
             if (view == null) {
                 view = inflater.inflate(R.layout.beacon_listview, null);
                 viewHolder = new ViewHolder();
-                viewHolder.deviceAddress = (TextView) view.findViewById(R.id.le_addr);
-                viewHolder.deviceSignal = (TextView) view.findViewById(R.id.le_rssi);
-                viewHolder.deviceName = (TextView) view.findViewById(R.id.le_name);
+                viewHolder.deviceSignalAddress = (TextView) view.findViewById(R.id.le_rssi_id);
                 viewHolder.deviceUuid = (TextView) view.findViewById(R.id.le_uuid);
                 viewHolder.deviceMajorMinor = (TextView) view.findViewById(R.id.le_uuid_major_minor);
-                viewHolder.deviceAssociation = (TextView) view.findViewById(R.id.le_ass);
                 viewHolder.devicePic = (ImageView) view.findViewById(R.id.le_pic);
                 view.setTag(viewHolder);
             } else {
@@ -408,30 +463,10 @@ public class BeaconScanListActivity extends Activity implements AbsListView.OnIt
             Beacon beacon = this.getItem(i);
             BluetoothDevice device = beacon.getBtDevice();
 
-            // Set the name of the beacon, first check if the name is set in a local
-            // association, if not, set the name broadcasted by the beacon if any
-            // else set the name to unknown device.
-            final String deviceName = device.getName();
-            final String localDeviceName = mService.getAssociationName(beacon);
-            if (localDeviceName != null) {
-                viewHolder.deviceName.setText(localDeviceName);
-            }
-            else if (deviceName != null && deviceName.length() > 0) {
-                viewHolder.deviceName.setText(deviceName);
-            }
-            else {
-                viewHolder.deviceName.setText(R.string.unknown_device);
-            }
-
-            viewHolder.deviceAddress.setText(device.getAddress());
-            viewHolder.deviceSignal.setText(String.valueOf(beacon.getRssi()));
+            viewHolder.deviceSignalAddress.setText("Signal: " + String.valueOf(beacon.getRssi()) + ", MAC: " + device.getAddress());
             viewHolder.deviceUuid.setText(beacon.getUuid());
             viewHolder.deviceMajorMinor.setText("Major: " + beacon.getMajor() +
                                                 ", Minor: " + beacon.getMinor());
-            String ass = mService.getAssociation(beacon);
-            if (ass == null)
-                ass = "Not Associated";
-            viewHolder.deviceAssociation.setText(ass);
 
             if (!mService.getList().contains(beacon.getId()))
                 viewHolder.devicePic.setImageResource(R.drawable.beacon_not_in_range);
@@ -443,12 +478,9 @@ public class BeaconScanListActivity extends Activity implements AbsListView.OnIt
 
     private class ViewHolder {
         ImageView   devicePic;
-        TextView    deviceName;
-        TextView    deviceSignal;
-        TextView    deviceAddress;
+        TextView    deviceSignalAddress;
         TextView    deviceUuid;
         TextView    deviceMajorMinor;
-        TextView    deviceAssociation;
     }
 
 }

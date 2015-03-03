@@ -20,34 +20,10 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="@dimen/device_list_font_size"
-        android:id="@+id/le_name"
-        android:paddingLeft="@dimen/device_list_icon_padding_size"
-        android:layout_gravity="left"/>
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="@dimen/device_list_font_size"
-        android:id="@+id/le_addr"
-        android:layout_alignParentRight="true"/>
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="@dimen/device_list_font_size"
-        android:id="@+id/le_rssi"
-        android:paddingLeft="@dimen/device_list_icon_padding_size"
-        android:layout_centerHorizontal="true"/>
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
         android:textSize="@dimen/device_list_font_size_uuid"
         android:id="@+id/le_uuid"
         android:paddingLeft="@dimen/device_list_icon_padding_size"
-        android:layout_below="@id/le_rssi"
-        android:layout_centerInParent="true"/>
+        android:layout_centerHorizontal="true"/>
 
     <TextView
         android:layout_width="wrap_content"
@@ -56,15 +32,15 @@
         android:id="@+id/le_uuid_major_minor"
         android:paddingLeft="@dimen/device_list_icon_padding_size"
         android:layout_below="@id/le_uuid"
-        android:layout_centerInParent="true"/>
+        android:layout_centerHorizontal="true"/>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="@dimen/device_list_font_size_uuid"
-        android:id="@+id/le_ass"
+        android:textSize="@dimen/device_list_font_size"
+        android:id="@+id/le_rssi_id"
         android:layout_below="@id/le_uuid_major_minor"
         android:paddingLeft="@dimen/device_list_icon_padding_size"
-        android:layout_centerInParent="true"/>
+        android:layout_centerHorizontal="true"/>
 
 </RelativeLayout>
