@@ -26,7 +26,7 @@
             android:layout_height="match_parent"
             android:id="@+id/beacon_info"
             android:layout_margin="10dp"
-            android:layout_gravity="bottom|left" />
+            android:gravity="center" />
     </FrameLayout>
 
 
