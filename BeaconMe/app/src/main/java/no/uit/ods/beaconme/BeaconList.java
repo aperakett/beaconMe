@@ -1,8 +1,5 @@
 package no.uit.ods.beaconme;
 
-import android.content.Context;
-import android.util.Log;
-
 import java.util.ArrayList;
 
 /**
@@ -23,14 +20,34 @@ import java.util.ArrayList;
 public class BeaconList {
     private ArrayList<Beacon> list;
 
-    // Constructor
+    /**
+     *  Constructor method for the class.
+     *
+     *  It creates a new instance of the ArrayList internally.
+     */
     public BeaconList() {
         super();
-        list = new ArrayList<Beacon>();
+        list = new ArrayList<>();
     }
 
-    // Add device to list, if the Beacon is in the list
-    // update the RSSI variable
+    /**
+     * Adds an instance of the Beacon class to the list.
+     *
+     * If the beacon is already in the list by first checking
+     * with the get method if the beacon is previously inserted
+     * in the list. If it is, the RSSI (signal level) of the beacon is
+     * updated, and the threshold of the beacon is reset (the beacon is
+     * visible, therefore the threshold is reset). If the beacon is not
+     * previously added, it's simply added.
+     *
+     * The point of the threshold is to add delay to the removal of
+     * a beacon in case for some reason a beacon is not seen in a scan-
+     * period thus preventing beacons from being inserted and removed
+     * due to this.
+     *
+     * @param beacon A instance of the beacon class that is to be added
+     *               to the BeaconList.
+     */
     public void addDevice(Beacon beacon) {
         Beacon b = get(beacon);
         // If the beacon is not found in the list, add it.
@@ -45,7 +62,14 @@ public class BeaconList {
 
     }
 
-    // Clear the list (purge all devices)
+    /**
+     * Iterate the BeaconList and remove all beacons that have a
+     * threshold of 0 or less.
+     *
+     * This method should be used between all scan intervals to remove
+     * beacons that are out of range. The threshold provides a certain
+     * delay before the beacon is removed.
+     */
     public void clear() {
 
         // iterate beacons in list
@@ -63,7 +87,12 @@ public class BeaconList {
         }
     }
 
-    // Returns the number of devices in list
+    /**
+     * Returns the number of Beacon class objects in the list
+     * to the caller.
+     *
+     * @return Integer with beacons in the list.
+     */
     public int getCount() {
         if (list != null)
             return list.size();
@@ -71,10 +100,18 @@ public class BeaconList {
             return 0;
     }
 
-    // Check if beacon is contained in list
+    /**
+     * Check if the beacon given as argument is contained
+     * in the BeaconList. Since the usage of this is intended
+     * for a device. The beacon is just checked for presence
+     * on the MAC address, not the UUID + major + minor.
+     *
+     * @param beacon A instance of the Beacon class to check for presence.
+     * @return Returns a boolean indicating the presence.
+     */
     public boolean contains (Beacon beacon) {
         for (int i = 0; i < list.size(); i++) {
-            Beacon b = ((Beacon) list.get(i));
+            Beacon b = list.get(i);
             // if this is true, the beacon is found in the list
             if (b.getBtDevice().getAddress().equals( beacon.getBtDevice().getAddress() )) {
                 return true;
@@ -83,7 +120,16 @@ public class BeaconList {
         return false;
     }
 
-    // Check if beacon is contained in list based on MAC
+    /**
+     * Check if the beacon given as argument is contained
+     * in the BeaconList. Since the usage of this is intended
+     * for a device. The beacon is just checked for presence
+     * on the MAC address, not the UUID + major + minor.
+     *
+     * @param mac A String with the mac address of the beacon, the mac must
+     *            be in xx:yy:xx:yy:xx:yy format.
+     * @return Returns a boolean indicating the presence.
+     */
     public boolean contains (String mac) {
         for (int i = 0; i < list.size(); i++) {
             Beacon b = list.get(i);
@@ -94,9 +140,17 @@ public class BeaconList {
     }
 
     // fetch a beacon from the list
+
+    /**
+     * Gets a beacon from the BeaconList class, this method is very
+     * similar to contains, expect that it returns a beacon.
+     *
+     * @param beacon An instance of the Beacon class to retrieve.
+     * @return Returns the beacon, or null if it's not found.
+     */
     public Beacon get (Beacon beacon) {
         for (int i = 0; i < list.size(); i++) {
-            Beacon b = ((Beacon) list.get(i));
+            Beacon b = list.get(i);
             // if this is true, the beacon is found in the list
             if (b.getBtDevice().getAddress().equals( beacon.getBtDevice().getAddress() )) {
                 return b;
@@ -105,6 +159,15 @@ public class BeaconList {
         return null;
     }
 
+    /**
+     * Gets the Beacon at a certain position in the list.
+     *
+     * @param i Integer with the beacon number to get.
+     * @return A intance of the Beacon class that corresponds to the
+     * argument i.
+     * @throws IndexOutOfBoundsException Can be thrown if access outside
+     * the bounds of the list is attempted.
+     */
     public Beacon getItem(int i) throws IndexOutOfBoundsException {
         return list.get(i);
     }

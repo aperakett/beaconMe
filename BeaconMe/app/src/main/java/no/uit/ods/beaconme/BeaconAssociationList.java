@@ -3,16 +3,13 @@ package no.uit.ods.beaconme;
 
 import android.content.Context;
 import android.util.Log;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.LinkedList;
 
 
 /**
@@ -34,7 +31,7 @@ import java.util.LinkedList;
 public class BeaconAssociationList {
     private JSONArray   associations;
     private File        assFile;
-    private String      fileName = "/associations";
+    String              fileName = "/associations";
 
     /**
      *  Constructor method for Beacon Association List.

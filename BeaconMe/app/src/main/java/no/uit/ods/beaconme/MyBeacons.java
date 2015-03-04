@@ -16,7 +16,6 @@ import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
-import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import org.json.JSONException;
@@ -25,10 +24,15 @@ import org.json.JSONObject;
 
 public class MyBeacons extends ActionBarActivity implements AbsListView.OnItemClickListener {
     private BeaconScannerService mService;
-    private ListView mListView;
     private MyBeaconListAdapter mAdapter;
+    ListView mListView;
 
-
+    /**
+     * onCreate initiates the activity by getting the scanner service from
+     * the intent and generating the listview.
+     *
+     * @param savedInstanceState The bundle that's inserted to the intent.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -43,11 +47,14 @@ public class MyBeacons extends ActionBarActivity implements AbsListView.OnItemCl
         BeaconScannerService.LocalBinder binderScan = (BeaconScannerService.LocalBinder) iBinder;
         mService = binderScan.getService();
 
-        // TODO: generate the listview
         createListView();
 
     }
 
+    /**
+     * Creates a adapter for populating the listview, sets the adpter to
+     * the listview and enables the onClickListener.
+     */
     private void createListView () {
         mAdapter = new MyBeaconListAdapter(this, mService.getAssociations());
         mListView = (ListView) findViewById(R.id.my_beacons_list);
@@ -57,10 +64,27 @@ public class MyBeacons extends ActionBarActivity implements AbsListView.OnItemCl
 
     }
 
+    /**
+     * Method is requires for since the MyBeacon class implements
+     * AbsListView.OnItemClickListener. This method is not used in the activity.
+     *
+     * @param parent Not used.
+     * @param view Not used.
+     * @param position Not used.
+     * @param id Not used.
+     */
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
     }
 
+    /**
+     * The method is launched when a long click is done on a listitem in the view.
+     *
+     * An action is performed depending on the choice in the contextmenu.
+     *
+     * @param item The MenuItem clicked on.
+     * @return If the menuitem is found true is returned.
+     */
     public boolean onContextItemSelected(MenuItem item) {
         Log.i("MyBeacons", "onItemClick()");
         // Get the beacon number clicked on
@@ -89,10 +113,20 @@ public class MyBeacons extends ActionBarActivity implements AbsListView.OnItemCl
                 });
                 alert.show();
                 break;
+            default:
+                return false;
         }
         return true;
     }
 
+    /**
+     * Creates the context menu by inflating the menu in
+     * R.menu.menu_context_my_beacons
+     *
+     * @param menu ContextMenu
+     * @param v View
+     * @param menuInfo ContextMenu.ContextMenuInfo
+     */
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
         // TODO: fix content of menu
@@ -101,17 +135,18 @@ public class MyBeacons extends ActionBarActivity implements AbsListView.OnItemCl
         inflater.inflate(R.menu.menu_context_my_beacons, menu);
     }
 
+    /**
+     * Adapter- class to populate the listview.
+     */
     private class MyBeaconListAdapter extends BaseAdapter {
         private LayoutInflater          inflater;
         private BeaconAssociationList   btleDevices;
-        private BeaconScannerService    mService;
 
         // Constructor
         public MyBeaconListAdapter(Context context, BeaconAssociationList list) {
             super();
             inflater    = LayoutInflater.from(context);
             btleDevices = list;
-
         }
 
         @Override
@@ -168,7 +203,6 @@ public class MyBeacons extends ActionBarActivity implements AbsListView.OnItemCl
     }
 
     private class ViewHolderBeacon {
-        ImageView   devicePic;
         TextView    deviceName;
         TextView    deviceValue;
         TextView    deviceUuid;

@@ -1,10 +1,6 @@
 package no.uit.ods.beaconme;
 
 import android.bluetooth.BluetoothDevice;
-import android.os.Parcel;
-import android.os.Parcelable;
-import android.util.Log;
-
 import java.util.Arrays;
 
 /**
@@ -47,7 +43,7 @@ public class Beacon {
     /**
      * Returns the BluetoothDevice class object from the Beacon class.
      *
-     * @return
+     * @return The BluetoothDevice inside the Beacon.
      */
     public BluetoothDevice getBtDevice () {
         return btDevice;
@@ -56,7 +52,7 @@ public class Beacon {
     /**
      * Returns the RSSI, which is the signal strength of the beacon.
      *
-     * @return
+     * @return Integer with the RSSI of the Beacon.
      */
     public int getRssi () {
         return rssi;
@@ -66,7 +62,7 @@ public class Beacon {
      * Updates the RSSI variable inside the Beacon class with a new
      * signal strength.
      *
-     * @param strength
+     * @param strength The new RSSI of the beacon.
      */
     public void putRssi (int strength) {
         this.rssi = strength;
@@ -75,7 +71,8 @@ public class Beacon {
     /**
      * Returns the ID (MAC address) of the beacon.
      *
-     * @return
+     * @return a String in xx:yy:xx:yy:xx:yy format with the mac
+     * address of the beacon.
      */
     public String getId () {
         return this.btDevice.getAddress();
@@ -88,9 +85,7 @@ public class Beacon {
      * UUID is set to be standard. I.e with dashes to make it easy
      * to read.
      *
-     * TODO revise size of advertisement and return value if to short
-     *
-     * @return
+     * @return A string with the UUID of the beacon.
      */
     public String getUuid () {
         // copy out the uuid from the scanrecord
@@ -119,7 +114,7 @@ public class Beacon {
      * If the device is not broadcasting this information
      * 0 is returned.
      *
-     * @return Integer with the 2 byte major value in string format
+     * @return Integer with the 2 byte major value.
      */
     public Integer getMajor () {
         if (scanRecord.length >= 27) {
@@ -138,7 +133,7 @@ public class Beacon {
      * If the device is not broadcasting this information
      * 0 is returned.
      *
-     * @return
+     * @return Integer with the 2 byte minor value.
      */
     public Integer getMinor () {
         // Test that the advertisement packet is big enough to contain minor

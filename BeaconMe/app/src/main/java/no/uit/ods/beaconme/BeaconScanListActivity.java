@@ -5,10 +5,8 @@ import android.app.AlertDialog;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.text.style.ForegroundColorSpan;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
@@ -26,13 +24,9 @@ import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -42,7 +36,7 @@ import java.util.concurrent.TimeUnit;
 /**
  *  Author: Espen Mæland Wilhelmsen, espen.wilhelmsen@gmail.com
  *
- *  Implements the activity that shows the list of association made on
+ *  Implements the activity that shows the list of associations made on
  *  the local device.
  *
  */
@@ -51,8 +45,8 @@ public class BeaconScanListActivity extends Activity implements AbsListView.OnIt
     private BeaconScannerService    mService;
     private BeaconScanListAdapter   mAdapter;
     private BeaconList              mList;
-    private ListView                mListView;
     private boolean                 initialized;
+    ListView                        mListView;
 
 
     /**
@@ -295,12 +289,12 @@ public class BeaconScanListActivity extends Activity implements AbsListView.OnIt
                                                   (ViewGroup)findViewById(R.id.categories));
         final Spinner spinner           = (Spinner) layout.findViewById(R.id.categorySpinner);
         AlertDialog.Builder alert       = new AlertDialog.Builder(this);
-        final ArrayList<String> list    = new ArrayList<String>();
+        final ArrayList<String> list    = new ArrayList<>();
 
         // Add categories to a list used in the spinner
         try {
             for (int i = 0; i < categories.length(); i++) {
-                String topic = ((JSONObject)categories.get(i)).getString("topic").toString();
+                String topic = ((JSONObject)categories.get(i)).getString("topic");
                 list.add(topic);
             }
         } catch (Exception e) {
@@ -309,7 +303,7 @@ public class BeaconScanListActivity extends Activity implements AbsListView.OnIt
         }
 
         // create adapter with arraylist and populate spinner with list
-        ArrayAdapter adapter = new ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, list);
+        ArrayAdapter adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, list);
         spinner.setAdapter(adapter);
 
 
@@ -319,23 +313,32 @@ public class BeaconScanListActivity extends Activity implements AbsListView.OnIt
         // get the beacon from the local list and insert data from beacon to view
         final Beacon beacon = mList.getItem(beaconNumber);
         if (beacon != null) {
-            beaconInfo.append("Beacon ID:\n" + beacon.getId() +
-                              "\nUUID:\n" + beacon.getUuid() +
-                              "\nMajor: " + beacon.getMajor() +
-                              ", Minor: " + beacon.getMinor());
+            String info = "Beacon ID:\n" + beacon.getId() +
+                    "\nUUID:\n" + beacon.getUuid() +
+                    "\nMajor: " + beacon.getMajor() +
+                    ", Minor: " + beacon.getMinor();
+            beaconInfo.append(info);
+        }
+        else {
+            Log.e("BeaconScanListActivity", "Failed to find the pressed beacon");
+            return;
         }
 
         // attempt to get beaconinformation from the backend system
-        final JSONArray beaconHits = bClient.getBeacons("", beacon.getUuid(), 0, "", "", String.valueOf(beacon.getMajor()), String.valueOf(beacon.getMinor()));
-        Log.e("BeaconScanListActivity", "getBeacons: " + beaconHits.toString());
+        final JSONArray beaconHits;
+
+        beaconHits = bClient.getBeacons("", beacon.getUuid(), 0, "", "", String.valueOf(beacon.getMajor()), String.valueOf(beacon.getMinor()));
+
+
+        // append beaconinfo to the alert dialogue view
         if (beaconHits != null && beaconHits.length() > 0) {
             beaconInfoBackend = beaconHits.getJSONObject(0);
-            beaconInfo.append("\n\nBeacon Name:\n" +
-                              beaconInfoBackend.get("name") +
-                              "\nAssociated to:\n" +
-                              beaconInfoBackend.get("url").toString());
+            String info = "\n\nBeacon Name:\n" +
+                    beaconInfoBackend.get("name") +
+                    "\nAssociated to:\n" +
+                    beaconInfoBackend.get("url").toString();
+            beaconInfo.append(info);
         }
-
         textView.setText(beaconInfo.toString());
         alert.setView(spinner);
 
@@ -344,13 +347,15 @@ public class BeaconScanListActivity extends Activity implements AbsListView.OnIt
         final EditText inputAssociation     = (EditText) layout.findViewById(R.id.associationInput);
         final EditText inputAssociationName = (EditText) layout.findViewById(R.id.associationInputName);
         try {
-            inputAssociationName.setText(beaconInfoBackend.get("name").toString());
-            inputAssociation.setText(beaconInfoBackend.get("url").toString());
-            // attempt to find the category of the beacon
-            for (int i = 0; i < categories.length(); i++) {
-                if (((JSONObject)categories.get(i)).getInt("id") == beaconInfoBackend.getInt("category_id")) {
-                    spinner.setSelection(i);
-                    break;
+            if (beaconInfoBackend != null) {
+                inputAssociationName.setText(beaconInfoBackend.get("name").toString());
+                inputAssociation.setText(beaconInfoBackend.get("url").toString());
+                // attempt to find the category of the beacon
+                for (int i = 0; i < categories.length(); i++) {
+                    if (((JSONObject) categories.get(i)).getInt("id") == beaconInfoBackend.getInt("category_id")) {
+                        spinner.setSelection(i);
+                        break;
+                    }
                 }
             }
         }
@@ -423,7 +428,6 @@ public class BeaconScanListActivity extends Activity implements AbsListView.OnIt
 
 
     /**
-     *  Author: Espen Mæland Wilhelmsen, espen.wilhelmsen@gmail.com
      *
      *  BeaconScanListAdapter to used to populate listview, requires a BeaconList
      *  and the BeaconScannerService as input to the constructor method.
@@ -458,11 +462,6 @@ public class BeaconScanListActivity extends Activity implements AbsListView.OnIt
                 return btleDevices.getCount();
             else
                 return 0;
-        }
-
-        public void setList (BeaconList list) {
-            Log.i("BeaconScanListAdapter", "setList(): " + list.toString());
-            btleDevices = list;
         }
 
         @Override
