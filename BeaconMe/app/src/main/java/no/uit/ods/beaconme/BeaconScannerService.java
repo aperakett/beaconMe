@@ -13,10 +13,8 @@ import android.os.HandlerThread;
 import android.os.IBinder;
 import android.util.Log;
 import android.widget.Toast;
-
 import org.json.JSONException;
 
-import java.util.concurrent.Executors;
 
 /**
  *  Author: Espen Mæland Wilhelmsen, espen.wilhelmsen@gmail.com
@@ -31,10 +29,7 @@ public class BeaconScannerService extends Service {
     private BluetoothAdapter btAdapter;
     private BeaconList btleDeviceList;
     private BeaconAssociationList associationList;
-
-//    private boolean scanning;
     private int sleepPeriod;
-
     // Binder given to clients
     private final IBinder mBinder = new LocalBinder();
 
@@ -113,9 +108,6 @@ public class BeaconScannerService extends Service {
             enableBtIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(enableBtIntent);
         }
-
-        // Initiate the scanning variable
-//        scanning = false;
 
         // initialize the beacon device list
         btleDeviceList = new BeaconList();

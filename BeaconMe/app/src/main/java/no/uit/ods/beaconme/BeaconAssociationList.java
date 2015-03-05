@@ -84,7 +84,7 @@ public class BeaconAssociationList {
         // Beacon is not in list, create a new entry
         if (i == -1) {
             JSONObject json = new JSONObject();
-            json.put("id", beacon.getId());
+            json.put("id", beacon.getAddress());
             json.put("uuid", beacon.getUuid());
             json.put("major", beacon.getMajor());
             json.put("minor", beacon.getMinor());
@@ -191,7 +191,7 @@ public class BeaconAssociationList {
         int uuidNum = -1;
         for (int i = 0; i < associations.length(); i++) {
             JSONObject ass = ((JSONObject) this.associations.get(i));
-            if (ass.get("id").toString().equals(beacon.getId()))
+            if (ass.get("id").toString().equals(beacon.getAddress()))
                 // Todo, change id or uuid if one is not matching?
                 return i;
             // save the position of a matching uuid

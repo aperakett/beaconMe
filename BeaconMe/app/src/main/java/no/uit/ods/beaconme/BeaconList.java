@@ -113,7 +113,7 @@ public class BeaconList {
         for (int i = 0; i < list.size(); i++) {
             Beacon b = list.get(i);
             // if this is true, the beacon is found in the list
-            if (b.getBtDevice().getAddress().equals( beacon.getBtDevice().getAddress() )) {
+            if (b.getAddress().equals( beacon.getAddress() )) {
                 return true;
             }
         }
@@ -133,7 +133,7 @@ public class BeaconList {
     public boolean contains (String mac) {
         for (int i = 0; i < list.size(); i++) {
             Beacon b = list.get(i);
-            if (b.getBtDevice().getAddress().equals(mac))
+            if (b.getAddress().equals(mac))
                 return true;
         }
         return false;
@@ -152,7 +152,7 @@ public class BeaconList {
         for (int i = 0; i < list.size(); i++) {
             Beacon b = list.get(i);
             // if this is true, the beacon is found in the list
-            if (b.getBtDevice().getAddress().equals( beacon.getBtDevice().getAddress() )) {
+            if (b.getAddress().equals( beacon.getAddress() )) {
                 return b;
             }
         }

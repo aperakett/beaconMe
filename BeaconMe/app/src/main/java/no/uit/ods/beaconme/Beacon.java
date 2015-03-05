@@ -6,47 +6,103 @@ import java.util.Arrays;
 /**
  *  Author: Espen Mæland Wilhelmsen, espen.wilhelmsen@gmail.com
  *
- *  This class implements beacon. It holds a bluetooth device which
- *  is accessed through the bundled methods.
+ *  This class implements beacon. It holds the information about the beacon
+ *   which is accessed through the bundled methods.
  *
  *  The beacon have a variable threshold which is used to delay the
  *  beacon from being removed the beacon list to prevent beacons from
  *  beeing prematurly removed.
  *
- *  TODO remove parcable, and public variables
  */
 public class Beacon {
-    private BluetoothDevice btDevice;
-    private int             rssi;
-    private int             threshold;
-    public byte[]          scanRecord;
-    final private int       initialThreshold = 2;
+    private String      name;
+    private String      mac;
+    private String      uuid;
+    private int         major;
+    private int         minor;
+    private int         txpower;
+    private int         rssi;
+    private int         threshold;
+    final private int   initialThreshold = 2;
 
     /**
-     *  Constructor method.
+     * Constructor method.
+     * <p/>
+     * Requires a BluetoothDevice class item, a signal strength (RSSI)
+     * and a scanRecord which is bundled with the leScan method of the
+     * BluetoothAdapter. (It's the beacon's broadcast packet in raw form).
      *
-     *  Requires a BluetoothDevice class item, a signal strength (RSSI)
-     *  and a scanRecord which is bundled with the leScan method of the
-     *  BluetoothAdapter. (It's the beacon's broadcast packet in raw form).
-     *
-     * @param device BluetoothDevice from the Android standard library
-     * @param signal Integer that represents the signal level in dBm
+     * @param device  BluetoothDevice from the Android standard library
+     * @param signal  Integer that represents the signal level in dBm
      * @param sRecord The raw data from the BTLE scan, contains all info from the beacon
      */
     public Beacon(BluetoothDevice device, int signal, byte[] sRecord) {
-        this.btDevice = device;
+        parseBeacon(sRecord);
+        this.name = device.getName();
+        this.mac  = device.getAddress();
         this.rssi = signal;
-        this.scanRecord = sRecord;
         this.threshold = initialThreshold;
     }
 
     /**
-     * Returns the BluetoothDevice class object from the Beacon class.
+     * Set the uuid from beacon extracted from the scanRecord
+     * of the BluetoothDevice. So the UUID is not parsed to check
+     * services offered by the BluetoothDevice. The format of the
+     * UUID is set to be standard. I.e with dashes to make it easy
+     * to read.
      *
-     * @return The BluetoothDevice inside the Beacon.
+     * Set the major from beacon extracted from the scanRecord
+     * of the BluetoothDevice. It's located in the advertising packet of the
+     * beacon in bytes 26-27.
+     * If the device is not broadcasting this information
+     * 0 is set.
+     *
+     * Sets the minor extracted from the scanRecord
+     * of the BluetoothDevice. It's located in the advertising packet of the
+     * beacon in bytes 28-29
+     * If the device is not broadcasting this information
+     * 0 is set.
+     *
+     * Sets the txpower the beacon is transmitting with, found at byte
+     * 31 in the advertisment packet.
+     *
+     * @param sRecord Byte array with the advertisment packet from the beacon.
      */
-    public BluetoothDevice getBtDevice () {
-        return btDevice;
+    private void parseBeacon (byte[] sRecord) {
+        // copy out the uuid from the scanrecord
+        byte[] a = Arrays.copyOfRange(sRecord, 9, 25);
+
+        // Convert the byte array to hex- string
+        StringBuilder sb = new StringBuilder(a.length * 2);
+        for (byte b : a)
+            sb.append(String.format("%02x", b & 0xff));
+
+        // fix the string syntax to be uuid style
+        sb.insert(8, "-");
+        sb.insert(13, "-");
+        sb.insert(18, "-");
+        sb.insert(23, "-");
+        this.uuid = sb.toString().toUpperCase();
+
+        // set the major
+        // Test that the advertisement packet is big enough to contain major
+        if (sRecord.length >= 27) {
+            this.major = ((sRecord[25] & 0xff) << 8) | (sRecord[26] & 0xff);
+        } else
+            this.major = 0;
+
+        // set the minor
+        // Test that the advertisement packet is big enough to contain minor
+        if (sRecord.length >= 29) {
+            this.minor = ((sRecord[27] & 0xff) << 8) | (sRecord[28] & 0xff);
+        } else
+            this.minor = 0;
+
+        // set the txpower of the beacon
+        if (sRecord.length >= 30)
+            this.txpower = sRecord[29] & 0xff;
+        else
+            this.txpower = 0;
     }
 
     /**
@@ -54,7 +110,7 @@ public class Beacon {
      *
      * @return Integer with the RSSI of the Beacon.
      */
-    public int getRssi () {
+    public int getRssi() {
         return rssi;
     }
 
@@ -64,7 +120,7 @@ public class Beacon {
      *
      * @param strength The new RSSI of the beacon.
      */
-    public void putRssi (int strength) {
+    public void putRssi(int strength) {
         this.rssi = strength;
     }
 
@@ -74,107 +130,90 @@ public class Beacon {
      * @return a String in xx:yy:xx:yy:xx:yy format with the mac
      * address of the beacon.
      */
-    public String getId () {
-        return this.btDevice.getAddress();
+    public String getAddress() {
+        return this.mac;
     }
 
     /**
-     * Returns the UUID of the beacon, extracted from the scanRecord
-     * of the BluetoothDevice. So the UUID is not parsed to check
-     * services offered by the BluetoothDevice. The format of the
-     * UUID is set to be standard. I.e with dashes to make it easy
-     * to read.
+     * Returns the name of the beacon.
+     *
+     * @return a String in with the name of the beacon
+     */
+    public String getName() {
+        return this.name;
+    }
+
+    /**
+     * Returns the UUID of the beacon.
      *
      * @return A string with the UUID of the beacon.
      */
-    public String getUuid () {
-        // copy out the uuid from the scanrecord
-        byte[] a = Arrays.copyOfRange(this.scanRecord, 9, 25);
-
-        // Convert the byte array to hex- string
-        StringBuilder sb = new StringBuilder(a.length * 2);
-        for(byte b: a)
-            sb.append(String.format("%02x", b & 0xff));
-
-        // fix the string syntax to be uuid style
-        sb.insert(8, "-");
-        sb.insert(13, "-");
-        sb.insert(18, "-");
-        sb.insert(23, "-");
-        String uuid = sb.toString();
-
-        return uuid.toUpperCase();
+    public String getUuid() {
+        return this.uuid;
     }
 
     /**
-     * Returns the Major value of the beacon, extracted from the scanRecord
-     * of the BluetoothDevice. It's located in the advertising packet of the
-     * beacon in bytes 26-27.
-     *
-     * If the device is not broadcasting this information
-     * 0 is returned.
+     * Returns the Major value of the beacon.
      *
      * @return Integer with the 2 byte major value.
      */
-    public Integer getMajor () {
-        if (scanRecord.length >= 27) {
-            Integer major = ((scanRecord[25] & 0xff) << 8) | (scanRecord[26] & 0xff);
-            return major;
-        }
-        else
-            return 0;
+    public Integer getMajor() {
+        return this.major;
     }
 
     /**
-     * Returns the Minor value of the beacon, extracted from the scanRecord
-     * of the BluetoothDevice. It's located in the advertising packet of the
-     * beacon in bytes 28-29
-     *
-     * If the device is not broadcasting this information
-     * 0 is returned.
+     * Returns the Minor value of the beacon.
      *
      * @return Integer with the 2 byte minor value.
      */
-    public Integer getMinor () {
-        // Test that the advertisement packet is big enough to contain minor
-        if (scanRecord.length >= 29) {
-            Integer major = ((scanRecord[27] & 0xff) << 8) | (scanRecord[28] & 0xff);
-            return major;
+    public Integer getMinor() {
+        return this.minor;
+    }
+
+    /**
+     * Get the signal level (txPower) the beacon is transmitting with.
+     *
+     * @return Integer with the transmission level.
+     */
+    public Integer getTxPower() {
+        return this.txpower;
+    }
+
+    protected static double calculateDistance(int txPower, double rssi) {
+        if (rssi == 0) {
+            return -1.0; // if we cannot determine accuracy, return -1.
         }
-        else
-            return 0;
+
+        double ratio = rssi*1.0/txPower;
+        if (ratio < 1.0) {
+            return Math.pow(ratio,10);
+        }
+        else {
+            return (0.89976)*Math.pow(ratio,7.7095) + 0.111;
+        }
     }
 
     /**
      * Returns the value of the threshold variable from the beacon class.
      *
-     * @return
+     * @return Integer with the threshold of the beacon.
      */
-    public int getThreshold () {
+    public int getThreshold() {
         return threshold;
     }
 
     /**
      * Resets the threshold to its default value.
      */
-    public void resetThreshold () {
+    public void resetThreshold() {
         threshold = initialThreshold;
     }
 
     /**
      * Decrease the threshold variable by 1.
      */
-    public void decreaseThreshold () {
+    public void decreaseThreshold() {
         threshold--;
     }
 
-    /**
-     * Updates the device variable in the Beacon class with a new
-     * BluetoothDevice.
-     *
-     * @param device
-     */
-    public void putDevice (BluetoothDevice device) {
-        this.btDevice = device;
-    }
 }

@@ -248,7 +248,7 @@ public class BeaconScanListActivity extends Activity implements AbsListView.OnIt
         alert.setMessage("Are you sure you want to remove the association?");
         alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int button) {
-                mService.removeAssociation(mList.getItem(beaconNumber).getId(), mList.getItem(beaconNumber).getUuid());
+                mService.removeAssociation(mList.getItem(beaconNumber).getAddress(), mList.getItem(beaconNumber).getUuid());
             }
         });
         alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -313,7 +313,7 @@ public class BeaconScanListActivity extends Activity implements AbsListView.OnIt
         // get the beacon from the local list and insert data from beacon to view
         final Beacon beacon = mList.getItem(beaconNumber);
         if (beacon != null) {
-            String info = "Beacon ID:\n" + beacon.getId() +
+            String info = "Beacon ID:\n" + beacon.getAddress() +
                     "\nUUID:\n" + beacon.getUuid() +
                     "\nMajor: " + beacon.getMajor() +
                     ", Minor: " + beacon.getMinor();
@@ -328,7 +328,6 @@ public class BeaconScanListActivity extends Activity implements AbsListView.OnIt
         final JSONArray beaconHits;
 
         beaconHits = bClient.getBeacons("", beacon.getUuid(), 0, "", "", String.valueOf(beacon.getMajor()), String.valueOf(beacon.getMinor()));
-
 
         // append beaconinfo to the alert dialogue view
         if (beaconHits != null && beaconHits.length() > 0) {
@@ -391,7 +390,7 @@ public class BeaconScanListActivity extends Activity implements AbsListView.OnIt
                                 beacon.getUuid(),
                                 inAssStr,
                                 cat,
-                                beacon.getId(),
+                                beacon.getAddress(),
                                 String.valueOf(beacon.getMajor()),
                                 String.valueOf(beacon.getMinor()));
                     }
@@ -401,7 +400,7 @@ public class BeaconScanListActivity extends Activity implements AbsListView.OnIt
                                 beacon.getUuid(),
                                 inAssStr,
                                 cat,
-                                beacon.getId(),
+                                beacon.getAddress(),
                                 String.valueOf(beacon.getMajor()),
 
                                 String.valueOf(beacon.getMinor()));
@@ -480,14 +479,13 @@ public class BeaconScanListActivity extends Activity implements AbsListView.OnIt
             }
 
             Beacon beacon = this.getItem(i);
-            BluetoothDevice device = beacon.getBtDevice();
 
-            viewHolder.deviceSignalAddress.setText("Signal: " + String.valueOf(beacon.getRssi()) + ", MAC: " + device.getAddress());
+            viewHolder.deviceSignalAddress.setText("Signal: " + String.valueOf(beacon.getRssi()) + ", MAC: " + beacon.getAddress());
             viewHolder.deviceUuid.setText(beacon.getUuid());
             viewHolder.deviceMajorMinor.setText("Major: " + beacon.getMajor() +
                                                 ", Minor: " + beacon.getMinor());
 
-            if (!mService.getList().contains(beacon.getId()))
+            if (!mService.getList().contains(beacon.getAddress()))
                 viewHolder.devicePic.setImageResource(R.drawable.beacon_not_in_range);
             else
                 viewHolder.devicePic.setImageResource(R.drawable.beacon);
