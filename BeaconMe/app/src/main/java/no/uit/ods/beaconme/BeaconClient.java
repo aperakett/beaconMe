@@ -21,13 +21,12 @@ import org.json.JSONArray;
  * accordingly to the server url. Be aware, the url is hardcoded!
  * <p>
  * Latest Changes
- * - Added support for beacon major/minor attribute
- * - Refactor Class, caller can now set username and password on construction. The class also
- *   handles the first time connection - i.e. setup token for user.
- * - All method calls now requests access to back-end before performing the request.
+ * - Attribute 'topic' is added to each beacon as in result of get request.
+ * - Method getCategory(categoryId, topic) is introduced. Now supports search
+ *   on categories from id and/or topic attribute.
  *
  * @author 	Vegard Strand (vst030@post.uit.no)
- * @version	1.1
+ * @version	1.2
  * @since	2015-02-26
  */
 public class BeaconClient {
@@ -37,7 +36,7 @@ public class BeaconClient {
 
     /**
      *
-     * @param username in email format
+     * @param username as email
      * @param password
      * @throws InterruptedException
      */
@@ -220,6 +219,25 @@ public class BeaconClient {
         t.join();
 
         return getCategories.getCategories();
+
+    }
+
+    /**
+     * Returns a category based on input search arguments
+     */
+    public JSONObject getCategory(int categoryId, String topic) throws InterruptedException {
+
+        GetCategory   getCategory;
+        Thread        t;
+
+        getCategory = new GetCategory(categoryId, topic);
+        t = new Thread(getCategory);
+        t.start();
+
+        // Sync
+        t.join();
+
+        return getCategory.getCategory();
 
     }
 
@@ -524,6 +542,57 @@ public class BeaconClient {
 
         public JSONArray getCategories() {
             return this.categories;
+        }
+    }
+
+    private class GetCategory implements Runnable {
+
+        private JSONObject          category;
+        private String              url;
+        private HttpURLConnection   conn;
+        private String              response;
+        private String              params;
+        private int                 categoryId;
+        private String              topic;
+
+        GetCategory(int categoryId, String topic) {
+
+            this.categoryId = categoryId;
+            this.topic = topic;
+
+        }
+
+        @Override
+        public void run() {
+            try {
+                url 	= serverUrl             + "/api_get_category";
+                params	= "&category[id]="      + this.categoryId
+                        + "&category[topic]="   + this.topic;
+                conn    = createConnection(url, "POST", params, false, true, true);
+
+                sendPostRequest(params, conn);
+                if (conn.getResponseCode() == 200) {
+
+                    String response = readResponse(conn.getInputStream());
+                    this.category    = new JSONObject(response);
+
+                }
+            } catch (JSONException | IOException e) {
+
+                e.printStackTrace();
+                this.category = null;
+
+            } finally {
+
+                if(conn != null) {
+                    conn.disconnect();
+                }
+
+            }
+        }
+
+        public JSONObject getCategory() {
+            return this.category;
         }
     }
 
