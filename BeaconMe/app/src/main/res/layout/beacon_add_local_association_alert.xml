@@ -7,7 +7,26 @@
     android:id="@+id/beacon_add_local"
     android:padding="4dp">
 
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content">
 
+        <Spinner
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="left"
+            android:paddingRight="30dp"
+            android:textAlignment="center"
+            android:id="@+id/beacon_add_notificationSpinner"
+            android:prompt="@string/notify"/>
+
+        <ImageView
+            android:layout_height="30dp"
+            android:layout_width="30dp"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:src="@drawable/drop_down_arrow" />
+    </RelativeLayout>
 
     <TextView
         android:layout_width="match_parent"

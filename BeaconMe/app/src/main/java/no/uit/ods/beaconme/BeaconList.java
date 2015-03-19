@@ -1,5 +1,7 @@
 package no.uit.ods.beaconme;
 
+import android.util.Log;
+
 import java.util.ArrayList;
 
 /**
@@ -54,10 +56,12 @@ public class BeaconList {
         if (b == null) {
             list.add(beacon);
         }
-        else {
-            // Update the RSSI variable while here..
+        // Update the RSSI variable while here..
+        // if it haven't been updated on this scan
+        else if (!b.getUpdated()) {
             b.putRssi(beacon.getRssi());
             b.resetThreshold();
+            b.setUpdated(true);
         }
 
     }
@@ -69,6 +73,9 @@ public class BeaconList {
      * This method should be used between all scan intervals to remove
      * beacons that are out of range. The threshold provides a certain
      * delay before the beacon is removed.
+     *
+     * The update boolean is reset so the beacons can have their data
+     * updated again
      */
     public void clear() {
 
@@ -83,6 +90,7 @@ public class BeaconList {
             }
             else {
                 beacon.decreaseThreshold();
+                beacon.setUpdated(false);
             }
         }
     }

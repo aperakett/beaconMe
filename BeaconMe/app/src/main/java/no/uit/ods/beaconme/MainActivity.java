@@ -11,13 +11,6 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Toast;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.IOException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -42,6 +35,17 @@ public class MainActivity extends ActionBarActivity {
 
         // start the scan schedule
         schedulePeriodicalScan();
+
+//        Notification n = new Notification.Builder(this)
+//                .setSmallIcon(R.drawable.beacon)
+//                .setContentTitle("TestTitle")
+//                .setContentText("TestContent")
+//                .setAutoCancel(true)
+//                .build();
+//
+//        int id = 001;
+//        NotificationManager nMan = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+//        nMan.notify(id, n);
     }
 
     @Override
@@ -122,7 +126,7 @@ public class MainActivity extends ActionBarActivity {
             public void run() {
                 scannerHandle.cancel(false);
             }
-        }, 60 * 60, TimeUnit.SECONDS);
+        }, 4, TimeUnit.HOURS);
 
     }
 
@@ -131,7 +135,6 @@ public class MainActivity extends ActionBarActivity {
         Intent intent = new Intent(this, BeaconScanListActivity.class);
         Bundle bundle = new Bundle();
         bundle.putBinder("binderScan", mService.getBinder());
-        // bundle.putBinder("binderNetwork", mFNetwork.getBinder());
         intent.putExtras(bundle);
         startActivity(intent, bundle);
     }
@@ -141,7 +144,6 @@ public class MainActivity extends ActionBarActivity {
         Intent intent = new Intent(this, MyBeacons.class);
         Bundle bundle = new Bundle();
         bundle.putBinder("binderScan", mService.getBinder());
-        // bundle.putBinder("binderNetwork", mFNetwork.getBinder());
         intent.putExtras(bundle);
         startActivity(intent, bundle);
     }

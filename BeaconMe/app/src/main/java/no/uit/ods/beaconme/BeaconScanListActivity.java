@@ -1,10 +1,12 @@
 package no.uit.ods.beaconme;
 
+
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.bluetooth.BluetoothDevice;
+
 import android.content.Context;
 import android.content.DialogInterface;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
@@ -28,6 +30,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -217,13 +221,21 @@ public class BeaconScanListActivity extends Activity implements AbsListView.OnIt
         //Get user input
         final EditText inputName = (EditText)layout.findViewById(R.id.beacon_add_local_name);
         final EditText inputAss  = (EditText)layout.findViewById(R.id.beacon_add_local_ass);
+        final Spinner  spinner   = (Spinner) layout.findViewById(R.id.beacon_add_notificationSpinner);
+
+        final List<String> list = Arrays.asList("Don't notify", "Less than 1m", "Less than 15m", "Allways notify");
+
+        // create adapter with arraylist and populate spinner with list
+        ArrayAdapter adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, list);
+        spinner.setAdapter(adapter);
 
         alert.setView(layout);
         alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int button) {
-                String name = inputName.getText().toString();
-                String ass  = inputAss.getText().toString();
-                mService.addAssociation(mList.getItem(beaconNumber), name, ass);
+                Integer notify  = list.indexOf(spinner.getSelectedItem().toString());
+                String name     = inputName.getText().toString();
+                String ass      = inputAss.getText().toString();
+                mService.addAssociation(mList.getItem(beaconNumber), name, ass, notify);
             }
         });
         alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -305,7 +317,6 @@ public class BeaconScanListActivity extends Activity implements AbsListView.OnIt
         // create adapter with arraylist and populate spinner with list
         ArrayAdapter adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, list);
         spinner.setAdapter(adapter);
-
 
         // create a textview to put information about the beacon to
         TextView textView = ((TextView) layout.findViewById(R.id.beacon_info));
@@ -402,7 +413,6 @@ public class BeaconScanListActivity extends Activity implements AbsListView.OnIt
                                 cat,
                                 beacon.getAddress(),
                                 String.valueOf(beacon.getMajor()),
-
                                 String.valueOf(beacon.getMinor()));
                     }
                 }
@@ -469,9 +479,10 @@ public class BeaconScanListActivity extends Activity implements AbsListView.OnIt
             if (view == null) {
                 view = inflater.inflate(R.layout.beacon_listview, null);
                 viewHolder = new ViewHolder();
-                viewHolder.deviceSignalAddress = (TextView) view.findViewById(R.id.le_rssi_id);
+                viewHolder.deviceSignalAddress = (TextView) view.findViewById(R.id.le_range);
                 viewHolder.deviceUuid = (TextView) view.findViewById(R.id.le_uuid);
                 viewHolder.deviceMajorMinor = (TextView) view.findViewById(R.id.le_uuid_major_minor);
+                viewHolder.deviceNotifyName = (TextView) view.findViewById(R.id.le_notify_name);
                 viewHolder.devicePic = (ImageView) view.findViewById(R.id.le_pic);
                 view.setTag(viewHolder);
             } else {
@@ -479,11 +490,23 @@ public class BeaconScanListActivity extends Activity implements AbsListView.OnIt
             }
 
             Beacon beacon = this.getItem(i);
-
-            viewHolder.deviceSignalAddress.setText("Signal: " + String.valueOf(beacon.getRssi()) + ", MAC: " + beacon.getAddress());
+            viewHolder.deviceSignalAddress.setText("Distance: " + String.format("%.1f", beacon.getDistance()) + "m" +
+                                                   ", MAC: " + beacon.getAddress());
             viewHolder.deviceUuid.setText(beacon.getUuid());
             viewHolder.deviceMajorMinor.setText("Major: " + beacon.getMajor() +
                                                 ", Minor: " + beacon.getMinor());
+
+            Integer notify = mService.getAssociationNotify(beacon);
+            if (notify >= 0) {
+                String tmp = "\nName: " + mService.getAssociationName(beacon) +
+                            ", Notify: " +
+                             mService.getAssociations().getNotificationString(notify);
+
+                viewHolder.deviceNotifyName.setText(tmp);
+                // TODO set color for local association data
+            }
+            else
+                viewHolder.deviceNotifyName.setText("");
 
             if (!mService.getList().contains(beacon.getAddress()))
                 viewHolder.devicePic.setImageResource(R.drawable.beacon_not_in_range);
@@ -498,6 +521,7 @@ public class BeaconScanListActivity extends Activity implements AbsListView.OnIt
         TextView    deviceSignalAddress;
         TextView    deviceUuid;
         TextView    deviceMajorMinor;
+        TextView    deviceNotifyName;
     }
 
 }

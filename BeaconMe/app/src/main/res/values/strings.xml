@@ -18,6 +18,7 @@
     <string name="title_activity_le_device_list">LeDeviceListActivity</string>
     <string name="name">Set name</string>
     <string name="ass">Set association</string>
+    <string name="notify">Notify</string>
 
     // Strings used by association list
     <string name="association_filename">associations.raw</string>
@@ -28,4 +29,6 @@
     <string name="title_activity_my_associations">MyBeacons</string>
     <string name="my_beacons">My Beacons</string>
     <string name="delete">Delete</string>
+
+
 </resources>
