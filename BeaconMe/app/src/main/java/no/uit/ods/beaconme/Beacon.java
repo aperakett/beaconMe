@@ -1,6 +1,8 @@
 package no.uit.ods.beaconme;
 
 import android.bluetooth.BluetoothDevice;
+import android.util.Log;
+
 import java.util.Arrays;
 
 /**
@@ -20,10 +22,11 @@ public class Beacon {
     private String      uuid;
     private int         major;
     private int         minor;
-    private int         txpower;
+    private int         signalLevel;
     private int         rssi;
     private int         threshold;
-    final private int   initialThreshold = 2;
+    private boolean     updated;
+    final private int   initialThreshold = 3;
 
     /**
      * Constructor method.
@@ -42,6 +45,7 @@ public class Beacon {
         this.mac  = device.getAddress();
         this.rssi = signal;
         this.threshold = initialThreshold;
+        this.updated   = false;
     }
 
     /**
@@ -98,17 +102,25 @@ public class Beacon {
         } else
             this.minor = 0;
 
-        // set the txpower of the beacon
+        // set the signallevel of the beacon
         if (sRecord.length >= 30)
-            this.txpower = sRecord[29] & 0xff;
+            this.signalLevel = 0xff - (sRecord[29] & 0xff);
         else
-            this.txpower = 0;
+            this.signalLevel = 0;
+    }
+
+    public boolean getUpdated() {
+        return this.updated;
+    }
+
+    public void setUpdated(boolean b) {
+        this.updated = b;
     }
 
     /**
      * Returns the RSSI, which is the signal strength of the beacon.
      *
-     * @return Integer with the RSSI of the Beacon.
+     * @return double with the RSSI of the Beacon.
      */
     public int getRssi() {
         return rssi;
@@ -175,16 +187,22 @@ public class Beacon {
      *
      * @return Integer with the transmission level.
      */
-    public Integer getTxPower() {
-        return this.txpower;
+    public Integer getSignalLevel() {
+        return this.signalLevel;
     }
 
-    protected static double calculateDistance(int txPower, double rssi) {
-        if (rssi == 0) {
+    /**
+     * Gets the estimated distance from the beacon based on the
+     * beacons advertised signal level at 1m and the rssi registered
+     * on the device.
+     *
+     * @return A double with the distance from beacon in meters.
+     */
+    public double getDistance() {
+        if (getRssi() == 0) {
             return -1.0; // if we cannot determine accuracy, return -1.
         }
-
-        double ratio = rssi*1.0/txPower;
+        double ratio = getRssi() * 1.0/getSignalLevel();
         if (ratio < 1.0) {
             return Math.pow(ratio,10);
         }
@@ -203,10 +221,10 @@ public class Beacon {
     }
 
     /**
-     * Resets the threshold to its default value.
+     * Resets the threshold  to its default value.
      */
     public void resetThreshold() {
-        threshold = initialThreshold;
+        this.threshold = initialThreshold;
     }
 
     /**

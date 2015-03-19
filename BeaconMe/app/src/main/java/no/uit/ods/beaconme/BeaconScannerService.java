@@ -29,7 +29,7 @@ public class BeaconScannerService extends Service {
     private BluetoothAdapter btAdapter;
     private BeaconList btleDeviceList;
     private BeaconAssociationList associationList;
-    private int sleepPeriod;
+    private int scanPeriod;
     // Binder given to clients
     private final IBinder mBinder = new LocalBinder();
 
@@ -63,6 +63,12 @@ public class BeaconScannerService extends Service {
                         @Override
                         public void run() {
                             btleDeviceList.addDevice(beacon);
+                            // TODO, clean up the beacon notification
+                            try {
+                                associationList.notify(beacon, getBaseContext());
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
                         }
                     });
 
@@ -90,7 +96,7 @@ public class BeaconScannerService extends Service {
 
 
         // Set the default scan interval in ms.
-        sleepPeriod = 2500;
+        scanPeriod = 2500;
 
         // Set up the bluetooth adapter through manager
         BluetoothManager btMan = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
@@ -119,7 +125,7 @@ public class BeaconScannerService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.i("BeaconScanService", "Starting?");
+        Log.i("BeaconScanService", "Starting service");
         // TODO Evalue sticky vs not sticky....
         return START_NOT_STICKY;
     }
@@ -147,16 +153,16 @@ public class BeaconScannerService extends Service {
 
                 btAdapter.stopLeScan(btleScanCallback);
             }
-        }, sleepPeriod);
+        }, scanPeriod);
 
         // clear beacons out of range before starting scan
         btleDeviceList.clear();
         btAdapter.startLeScan(btleScanCallback);
     }
 
-    public void addAssociation(Beacon beacon, String name, String association) {
+    public void addAssociation(Beacon beacon, String name, String association, Integer notify) {
         try {
-            associationList.add(beacon, name, association);
+            associationList.add(beacon, name, association, notify);
         }
         catch (Exception e) {
             Log.e("BeaconScannerService", e.getMessage());
@@ -184,6 +190,21 @@ public class BeaconScannerService extends Service {
         return null;
     }
 
+    public Integer getAssociationNotify(Beacon beacon) {
+        try {
+            return associationList.getNotify(beacon);
+        }
+        catch (Exception e) {
+            Log.e("BeaconScannerService", e.getMessage());
+        }
+        return -1;
+    }
+
+    /**
+     * TODO fix uuid association removal???
+     * @param id
+     * @param uuid
+     */
     public void removeAssociation(String id, String uuid) {
         try {
             associationList.remove(id);

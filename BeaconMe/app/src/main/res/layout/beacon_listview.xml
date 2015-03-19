@@ -5,6 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="fragment"
+    android:id="@+id/beacon_listitem"
     android:padding="4dp"
     android:background="@drawable/border">
 
@@ -38,9 +39,19 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="@dimen/device_list_font_size"
-        android:id="@+id/le_rssi_id"
+        android:id="@+id/le_range"
         android:layout_below="@id/le_uuid_major_minor"
         android:paddingLeft="@dimen/device_list_icon_padding_size"
         android:layout_centerHorizontal="true"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="@dimen/device_list_font_size"
+        android:id="@+id/le_notify_name"
+        android:layout_below="@id/le_uuid_major_minor"
+        android:paddingLeft="@dimen/device_list_icon_padding_size"
+        android:layout_centerHorizontal="true"/>
+
 
 </RelativeLayout>
