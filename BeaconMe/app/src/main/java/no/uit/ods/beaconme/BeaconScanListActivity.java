@@ -12,6 +12,7 @@ import android.os.IBinder;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -29,6 +30,8 @@ import android.widget.Toast;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -84,13 +87,24 @@ public class BeaconScanListActivity extends Activity implements AbsListView.OnIt
         }
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
     /**
      * Upon onDestroy all associations are commited to disk
      * to make sure none is lost.
      */
     public void onDestroy () {
         super.onDestroy();
-        mService.commitAssociation();
+        try {
+            mService.getAssociationList().commit();
+        } catch (IOException e) {
+            Log.e("BEaconScanListActivity", "Failed to save association list: " + e.getMessage());
+        }
     }
 
     /**
@@ -127,6 +141,7 @@ public class BeaconScanListActivity extends Activity implements AbsListView.OnIt
                         mList.addDevice(beacon);
                     }
                 }
+                mList.sort();
                 // finally update the view via the UiThread which is the adapter owner
                 runOnUiThread(new Runnable() {
                     @Override
@@ -155,6 +170,8 @@ public class BeaconScanListActivity extends Activity implements AbsListView.OnIt
      */
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        Log.e("BeaconScanListActivity", "Click - pos: " + String.valueOf(position) + ", id: " + String.valueOf(id));
+        this.openContextMenu(view);
     }
 
     /**
@@ -235,7 +252,12 @@ public class BeaconScanListActivity extends Activity implements AbsListView.OnIt
                 Integer notify  = list.indexOf(spinner.getSelectedItem().toString());
                 String name     = inputName.getText().toString();
                 String ass      = inputAss.getText().toString();
-                mService.addAssociation(mList.getItem(beaconNumber), name, ass, notify);
+
+                try {
+                    mService.getAssociationList().add(mList.getItem(beaconNumber), name, ass, notify);
+                } catch (JSONException e) {
+                    Log.e("BEaconScanListActivity", "Failed to add assocaition: " + e.getMessage());
+                }
             }
         });
         alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -260,7 +282,11 @@ public class BeaconScanListActivity extends Activity implements AbsListView.OnIt
         alert.setMessage("Are you sure you want to remove the association?");
         alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int button) {
-                mService.removeAssociation(mList.getItem(beaconNumber).getAddress(), mList.getItem(beaconNumber).getUuid());
+                try {
+                    mService.getAssociationList().remove(mList.getItem(beaconNumber).getAddress());
+                } catch (JSONException e) {
+                    Log.e("BeaconScanListActivity", "Failed to remove association from list: " + e.getMessage());
+                }
             }
         });
         alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -339,7 +365,7 @@ public class BeaconScanListActivity extends Activity implements AbsListView.OnIt
         final JSONArray beaconHits;
 
         beaconHits = bClient.getBeacons("", beacon.getUuid(), 0, "", "", String.valueOf(beacon.getMajor()), String.valueOf(beacon.getMinor()));
-
+Log.e("BeaconListActivity", beaconHits.toString());
         // append beaconinfo to the alert dialogue view
         if (beaconHits != null && beaconHits.length() > 0) {
             beaconInfoBackend = beaconHits.getJSONObject(0);
@@ -496,18 +522,23 @@ public class BeaconScanListActivity extends Activity implements AbsListView.OnIt
             viewHolder.deviceMajorMinor.setText("Major: " + beacon.getMajor() +
                                                 ", Minor: " + beacon.getMinor());
 
-            Integer notify = mService.getAssociationNotify(beacon);
-            if (notify >= 0) {
-                String tmp = "\nName: " + mService.getAssociationName(beacon) +
-                            ", Notify: " +
-                             mService.getAssociations().getNotificationString(notify);
+            Integer notify = null;
+            try {
+                notify = mService.getAssociationList().getNotify(beacon);
 
-                viewHolder.deviceNotifyName.setText(tmp);
-                // TODO set color for local association data
+                if (notify >= 0) {
+                    String tmp = "\nName: " + mService.getAssociationList().getName(beacon) +
+                                ", Notify: " +
+                                 mService.getAssociationList().getNotificationString(notify);
+
+                    viewHolder.deviceNotifyName.setText(tmp);
+                    // TODO set color for local association data
+                }
+                else
+                    viewHolder.deviceNotifyName.setText("");
+            } catch (JSONException e) {
+                e.printStackTrace();
             }
-            else
-                viewHolder.deviceNotifyName.setText("");
-
             if (!mService.getList().contains(beacon.getAddress()))
                 viewHolder.devicePic.setImageResource(R.drawable.beacon_not_in_range);
             else

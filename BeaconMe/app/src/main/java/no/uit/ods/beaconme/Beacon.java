@@ -1,8 +1,6 @@
 package no.uit.ods.beaconme;
 
 import android.bluetooth.BluetoothDevice;
-import android.util.Log;
-
 import java.util.Arrays;
 
 /**
@@ -20,6 +18,8 @@ public class Beacon {
     private String      name;
     private String      mac;
     private String      uuid;
+    private String      category;
+    private String      url;
     private int         major;
     private int         minor;
     private int         signalLevel;
@@ -30,7 +30,7 @@ public class Beacon {
 
     /**
      * Constructor method.
-     * <p/>
+     *
      * Requires a BluetoothDevice class item, a signal strength (RSSI)
      * and a scanRecord which is bundled with the leScan method of the
      * BluetoothAdapter. (It's the beacon's broadcast packet in raw form).
@@ -41,11 +41,49 @@ public class Beacon {
      */
     public Beacon(BluetoothDevice device, int signal, byte[] sRecord) {
         parseBeacon(sRecord);
-        this.name = device.getName();
-        this.mac  = device.getAddress();
-        this.rssi = signal;
+        this.name      = device.getName();
+        this.mac       = device.getAddress();
+        this.rssi      = signal;
         this.threshold = initialThreshold;
         this.updated   = false;
+        this.category  = null;
+        this.url       = null;
+    }
+
+    /**
+     * Setter for category variable.
+     *
+     * @param category String representing the category.
+     */
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
+    /**
+     * Getter for category variable.
+     *
+     * @return Returns String representing the category.
+     */
+    public String getCategory() {
+        return this.category;
+    }
+
+    /**
+     * Setter for the url variable.
+     *
+     * @param url String representing the url.
+     */
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
+    /**
+     * Getter for the url variable.
+     *
+     * @return Returns String representing the url.
+     */
+    public String getUrl() {
+        return this.url;
     }
 
     /**
@@ -106,7 +144,7 @@ public class Beacon {
         if (sRecord.length >= 30)
             this.signalLevel = 0xff - (sRecord[29] & 0xff);
         else
-            this.signalLevel = 0;
+            this.signalLevel = 0xff;
     }
 
     public boolean getUpdated() {
@@ -196,11 +234,14 @@ public class Beacon {
      * beacons advertised signal level at 1m and the rssi registered
      * on the device.
      *
+     * If it is not possible to range estimate the device, infinity
+     * is returned.
+     *
      * @return A double with the distance from beacon in meters.
      */
     public double getDistance() {
-        if (getRssi() == 0) {
-            return -1.0; // if we cannot determine accuracy, return -1.
+        if (getRssi() == 0 || getSignalLevel() == 0xff) {
+            return Float.POSITIVE_INFINITY; // if we cannot determine accuracy, return infinity
         }
         double ratio = getRssi() * 1.0/getSignalLevel();
         if (ratio < 1.0) {

@@ -16,17 +16,17 @@ import java.io.IOException;
 
 
 /**
- * Author: Espen Maeland Wilhelmsen, espen.wilhelmsen@gmail.com
+ * Author: Espen Maeland Wilhelmsen, espen.wilhelmsen@gmail.com<br>
  *
  * Implements a BTLE Association list which makes it possible to
- * search and find values depending the id and uuid of the beacon.
+ * search and find values depending the id and uuid of the beacon.<br>
  *
  * Searching is first done on ID (MAC), if there is no hit, the
  * search continues on UUID. This makes it possible to replacing
- * a beacon while still offering the same information.
+ * a beacon while still offering the same information.<br>
  *
  * The associations is stored in an instance of the JSONObject which
- * is inserted into a JSONArray.
+ * is inserted into a JSONArray.<br>
  *
  * The associations are saved to a file named "/associations" to make
  * the data persistent.
@@ -37,7 +37,7 @@ public class BeaconAssociationList {
     String              fileName = "/associations";
 
     /**
-     *  Constructor method for Beacon Association List.
+     *  Constructor method for Beacon Association List.<br>
      *
      *  It needs a context in order to be able to access files.
      */

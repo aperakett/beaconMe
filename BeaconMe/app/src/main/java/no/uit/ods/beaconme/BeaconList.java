@@ -180,4 +180,49 @@ public class BeaconList {
         return list.get(i);
     }
 
+                      /**
+     * Sorts the list on the distance variable in the Beacon class.
+     *
+     */
+    public void sort() {
+        if (list.size() <= 1)
+            return;
+
+        // INSERTION SORT
+        for (int i = 1; i < list.size(); i++) {
+            double iDist = list.get(i).getDistance();
+            if (iDist < list.get(i - 1).getDistance()) {
+                for (int j = i - 1; j >= 0; j--) {
+                    if (iDist > list.get(j).getDistance()) {
+                        Beacon iBeacon = list.get(i);
+                        list.remove(i);
+                        list.add(j + 1, iBeacon);
+                        break;
+                    } else if (j == 0) {
+                        Beacon iBeacon = list.get(i);
+                        list.remove(i);
+                        list.add(j, iBeacon);
+                        break;
+                    }
+                }
+            }
+        }
+
+        /*
+        SELECTION SORT
+        for (int i = 0; i < list.size() - 1; i++) {
+            for (int j = i + 1; j < list.size(); j++) {
+                if (list.get(i).getDistance() > list.get(j).getDistance()) {
+                    Beacon jBeacon = list.get(j);
+                    list.remove(j);
+                    Beacon iBeacon = list.get(i);
+                    list.remove(i);
+                    list.add(i, jBeacon);
+                    list.add(j, iBeacon);
+                    Log.e("SORTING::::::", String.format("%.2f", iBeacon.getDistance()) + " / " + String.format("%.2f", jBeacon.getDistance()));
+                }
+            }
+        }
+        */
+    }
 }

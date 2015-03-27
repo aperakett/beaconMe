@@ -48,7 +48,6 @@ public class MyBeacons extends ActionBarActivity implements AbsListView.OnItemCl
         mService = binderScan.getService();
 
         createListView();
-
     }
 
     /**
@@ -56,7 +55,7 @@ public class MyBeacons extends ActionBarActivity implements AbsListView.OnItemCl
      * the listview and enables the onClickListener.
      */
     private void createListView () {
-        mAdapter = new MyBeaconListAdapter(this, mService.getAssociations());
+        mAdapter = new MyBeaconListAdapter(this, mService.getAssociationList());
         mListView = (ListView) findViewById(R.id.my_beacons_list);
         mListView.setOnItemClickListener(this);
         mListView.setAdapter(mAdapter);
@@ -98,7 +97,7 @@ public class MyBeacons extends ActionBarActivity implements AbsListView.OnItemCl
                 alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int button) {
                         try {
-                            mService.removeAssociation(mService.getAssociations().get(menuNumber).get("id").toString(), mService.getAssociations().get(menuNumber).get("uuid").toString());
+                            mService.getAssociationList().remove((mService.getAssociationList().get(menuNumber).get("id").toString()));
                             mAdapter.notifyDataSetChanged();
                         }
                         catch (JSONException e) {

@@ -34,23 +34,14 @@ public class MainActivity extends ActionBarActivity {
         startService(intent);
 
         // start the scan schedule
-        schedulePeriodicalScan();
+        //schedulePeriodicalScan();
 
-//        Notification n = new Notification.Builder(this)
-//                .setSmallIcon(R.drawable.beacon)
-//                .setContentTitle("TestTitle")
-//                .setContentText("TestContent")
-//                .setAutoCancel(true)
-//                .build();
-//
-//        int id = 001;
-//        NotificationManager nMan = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-//        nMan.notify(id, n);
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        mService.stopSelf();
         unbindService(mConnection);
     }
 
@@ -100,7 +91,7 @@ public class MainActivity extends ActionBarActivity {
         }
     };
 
-
+/*
     // Schedules periodical BTLE scan
     public void schedulePeriodicalScan () {
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
@@ -129,7 +120,7 @@ public class MainActivity extends ActionBarActivity {
         }, 4, TimeUnit.HOURS);
 
     }
-
+*/
     // Starts the scan activity, which shows a list of ALL nearby beacons
     public void scanBtleDevices (View view) {
         Intent intent = new Intent(this, BeaconScanListActivity.class);

@@ -15,6 +15,11 @@ import android.util.Log;
 import android.widget.Toast;
 import org.json.JSONException;
 
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+
 
 /**
  *  Author: Espen Mæland Wilhelmsen, espen.wilhelmsen@gmail.com
@@ -33,6 +38,11 @@ public class BeaconScannerService extends Service {
     // Binder given to clients
     private final IBinder mBinder = new LocalBinder();
 
+    // Constructor method.
+    public BeaconScannerService() {
+        super();
+    }
+
     /**
      * Class used for the client Binder.  Because we know this service always
      * runs in the same process as its clients, we don't need to deal with IPC.
@@ -44,43 +54,42 @@ public class BeaconScannerService extends Service {
         }
     }
 
+    /**
+     * Return the communication channel to the service.
+     * This is what the client use to communicate with the service.
+     *
+     * @param intent The intent the service is started with.
+     * @return Returns the service IBinder.
+     */
     @Override
     public IBinder onBind(Intent intent) {
         return mBinder;
     }
 
+    /**
+     * Help function to get the IBinder from the service.
+     *
+     * @return Resturns the IBinder from the service.
+     */
     public IBinder getBinder () {
         return mBinder;
     }
 
-    // Scan callback- interface, stores the beacons in the list
-    private BluetoothAdapter.LeScanCallback btleScanCallback =
-            new BluetoothAdapter.LeScanCallback() {
-                @Override
-                public void onLeScan(final BluetoothDevice device, int rssi, byte[] scanRecord) {
-                    final Beacon beacon = new Beacon(device, rssi, scanRecord);
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            btleDeviceList.addDevice(beacon);
-                            // TODO, clean up the beacon notification
-                            try {
-                                associationList.notify(beacon, getBaseContext());
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    });
-
-                }
-
-            };
-
-    // Constructor method.
-    public BeaconScannerService() {
-        super();
-    }
-
+    /**
+     * The onCreate method is automatically called when starting the
+     * service. <br>
+     *
+     * Sets up the service by: <br>
+     *  - Checking for BLuetooth LE support. <br>
+     *  - Sets up a thread for running the Bluetooth LE scans in. <br>
+     *  - Sets up a BluetoothAdapter. <br>
+     *  - Checks if Bluetooth is supported. <br>
+     *  - Checks if Bluetooth is enabled on the device, if not a request to
+     *  enable it is launced. <br>
+     *  - Initialize the BeaconList. <br>
+     *  - Initialize the Association list.
+     *
+     */
     @Override
     public void onCreate () {
         HandlerThread thread = new HandlerThread("ServiceStartArguments", 10);
@@ -121,31 +130,52 @@ public class BeaconScannerService extends Service {
         // set up the association list
         associationList = new BeaconAssociationList(getApplicationContext());
 
+        schedulePeriodicalScan();
     }
 
+    /**
+     * Automatically run when the service is started.
+     *
+     * @param intent The intent the service is started with.
+     * @param flags x
+     * @param startId x
+     * @return Returns START_NOT_STICKY
+     */
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.i("BeaconScanService", "Starting service");
-        // TODO Evalue sticky vs not sticky....
         return START_NOT_STICKY;
     }
+
+    /**
+     * Automatically run when service is destroyed.
+     *
+     * Does nothing as of yet.
+     */
     @Override
     public void onDestroy () {
         Log.i("BeaconScanService", "onDestroy()");
     }
 
-    public int getNumberOfDevices () {
-        return btleDeviceList.getCount();
-    }
-
-    // Returns the beacon list from the service.
+    /**
+     * Returns the beacon list from the service.
+     *
+     * @return Returns a list with all beacons in proximity.
+     */
     public BeaconList getList () {
         return btleDeviceList;
     }
 
-    // Toggles a scan, if a scan is running, the running scan is stopped
-    // to prevent errors.
-    public void scan() {
+    public BeaconAssociationList getAssociationList() {
+        return associationList;
+    }
+
+    /**
+     * Run a single scan, and add the beacons to the beacon list
+     * in the service.
+     *
+     */
+    private void scan() {
 
         handler.postDelayed(new Runnable() {
             @Override
@@ -160,70 +190,123 @@ public class BeaconScannerService extends Service {
         btAdapter.startLeScan(btleScanCallback);
     }
 
-    public void addAssociation(Beacon beacon, String name, String association, Integer notify) {
-        try {
-            associationList.add(beacon, name, association, notify);
-        }
-        catch (Exception e) {
-            Log.e("BeaconScannerService", e.getMessage());
-        }
+    // Schedules periodical BTLE scan
+    private void schedulePeriodicalScan () {
+        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+        final Runnable scan = new Runnable() {
+            @Override
+            public void run() {
+                scan();
+            }
+        };
+
+        final Thread t = new Thread () {
+            public void run () {
+                try {
+                    scan.run();
+                } catch (Exception e) {
+
+                }
+            }
+        };
+        final ScheduledFuture scannerHandle = scheduler.scheduleAtFixedRate(t, 5000, 5000, TimeUnit.MILLISECONDS);
+
+        /*
+        scheduler.schedule(new Runnable() {
+            @Override
+            public void run() {
+                scannerHandle.cancel(false);
+            }
+        }, 0, TimeUnit.HOURS);
+        */
+
     }
+    /*
+        public void addAssociation(Beacon beacon, String name, String association, Integer notify) {
+            try {
+                associationList.add(beacon, name, association, notify);
+            }
+            catch (Exception e) {
+                Log.e("BeaconScannerService", e.getMessage());
+            }
+        }
 
 
-    public String getAssociation(Beacon beacon) {
-        try {
-            return associationList.getAssociation(beacon);
-        }
-        catch (Exception e) {
-            Log.e("BeaconScannerService", e.getMessage());
-        }
-        return null;
-    }
+    //    public String getAssociation(Beacon beacon) {
+    //        try {
+    //            return associationList.getAssociation(beacon);
+    //        }
+    //        catch (Exception e) {
+    //            Log.e("BeaconScannerService", e.getMessage());
+    //        }
+    //        return null;
+    //    }
 
-    public String getAssociationName(Beacon beacon) {
-        try {
-            return associationList.getName(beacon);
+        public String getAssociationName(Beacon beacon) {
+            try {
+                return associationList.getName(beacon);
+            }
+            catch (Exception e) {
+                Log.e("BeaconScannerService", e.getMessage());
+            }
+            return null;
         }
-        catch (Exception e) {
-            Log.e("BeaconScannerService", e.getMessage());
-        }
-        return null;
-    }
 
-    public Integer getAssociationNotify(Beacon beacon) {
-        try {
-            return associationList.getNotify(beacon);
+        public Integer getAssociationNotify(Beacon beacon) {
+            try {
+                return associationList.getNotify(beacon);
+            }
+            catch (Exception e) {
+                Log.e("BeaconScannerService", e.getMessage());
+            }
+            return -1;
         }
-        catch (Exception e) {
-            Log.e("BeaconScannerService", e.getMessage());
-        }
-        return -1;
-    }
 
-    /**
-     * TODO fix uuid association removal???
-     * @param id
-     * @param uuid
-     */
-    public void removeAssociation(String id, String uuid) {
-        try {
-            associationList.remove(id);
-        } catch (JSONException e) {
-            Log.e("BeaconScannerService", "failed to remove association: " + e.getMessage());
-        }
-    }
 
-    public void commitAssociation() {
-        try {
-            associationList.commit();
+        public void removeAssociation(String id, String uuid) {
+            try {
+                associationList.remove(id);
+            } catch (JSONException e) {
+                Log.e("BeaconScannerService", "failed to remove association: " + e.getMessage());
+            }
         }
-        catch (Exception e) {
-            Log.e("BeaconScannerService", "failed to commit associations: " + e.getMessage());
-        }
-    }
 
-    public BeaconAssociationList getAssociations() {
-        return associationList;
-    }
+        public void commitAssociation() {
+            try {
+                associationList.commit();
+            }
+            catch (Exception e) {
+                Log.e("BeaconScannerService", "failed to commit associations: " + e.getMessage());
+            }
+        }
+
+        public BeaconAssociationList getAssociations() {
+            return associationList;
+        }
+    */
+    // Scan callback- interface, stores the beacons in the list
+    private BluetoothAdapter.LeScanCallback btleScanCallback =
+            new BluetoothAdapter.LeScanCallback() {
+                @Override
+                public void onLeScan(final BluetoothDevice device, int rssi, byte[] scanRecord) {
+                    final Beacon beacon = new Beacon(device, rssi, scanRecord);
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            btleDeviceList.addDevice(beacon);
+                            // TODO, clean up the beacon notification
+                            try {
+                                associationList.notify(beacon, getBaseContext());
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    });
+
+                }
+
+            };
+
+
 }
 
