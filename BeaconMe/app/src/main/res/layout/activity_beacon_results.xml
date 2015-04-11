@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/Result_layout"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="@android:color/white"
+    android:weightSum="1"
+    android:orientation="vertical" >
+
+    <LinearLayout
+        android:id="@+id/list1"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:textAlignment="center"
+        android:layout_gravity="center_vertical"
+        android:layout_weight="0.7"
+        android:background="@android:color/holo_blue_bright">
+
+        <TextView
+            android:id="@+id/header1"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:text="@string/selected_text"
+            android:background="@android:color/holo_blue_bright"
+            android:gravity="center" />
+
+        <ListView
+            android:id="@+id/resultList"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:background="@android:color/holo_blue_bright"
+            android:layout_margin="5dp"
+            android:divider="@null"
+            android:dividerHeight="2dp" >
+        </ListView>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/list2"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:layout_weight="0.3"
+        android:background="@android:color/darker_gray" >
+
+        <TextView
+            android:id="@+id/resultHeader"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:background="@android:color/darker_gray"
+            android:gravity="center"
+            android:text="@string/nearby_text" />
+
+
+        <ListView
+            android:id="@+id/resultView"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:background="@android:color/darker_gray"
+            android:layout_margin="5dp"
+            android:divider="@null"
+            android:dividerHeight="0dp" />
+
+
+    </LinearLayout>
+
+</LinearLayout>
+
+

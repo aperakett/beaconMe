@@ -61,13 +61,18 @@ public class MainActivity extends ActionBarActivity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
-            return true;
+            //return true;
+            Intent i = new Intent(this, BeaconSettings.class);
+            startActivity(i);
         }
         else if (id == R.id.action_scan) {
             scanBtleDevices(item.getActionView());
         }
         else if (id == R.id.action_mybeacons) {
             myBeacons(item.getActionView());
+        }
+        else if (id == R.id.action_categories) {
+            categories(item.getActionView());
         }
 
         return super.onOptionsItemSelected(item);
@@ -133,6 +138,15 @@ public class MainActivity extends ActionBarActivity {
     // Starts the MyBeacon activity, which shows a list of ALL nearby beacons
     public void myBeacons (View view) {
         Intent intent = new Intent(this, MyBeacons.class);
+        Bundle bundle = new Bundle();
+        bundle.putBinder("binderScan", mService.getBinder());
+        intent.putExtras(bundle);
+        startActivity(intent, bundle);
+    }
+
+    // Starts the Category activity, where all categories are listed with checkboxes so you can filter
+    public void categories (View view) {
+        Intent intent = new Intent(this, BeaconCategory.class);
         Bundle bundle = new Bundle();
         bundle.putBinder("binderScan", mService.getBinder());
         intent.putExtras(bundle);

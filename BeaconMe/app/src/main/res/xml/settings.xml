@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory
+        android:title="Notifications">
+        <CheckBoxPreference
+            android:key="all_notifications"
+            android:title="All notifications"
+            android:summary="Turn all notifications on/off"
+            android:defaultValue="true" />
+        <CheckBoxPreference
+            android:key="result_notifications"
+            android:title="Filtered notifications"
+            android:summary="Turn filter notifications on/off"
+            android:defaultValue="true" />
+    </PreferenceCategory>
+    <PreferenceCategory
+        android:title="Sync Settings">
+        <ListPreference
+            android:key="sync_settings"
+            android:entries="@array/scan_freq"
+            android:entryValues="@array/scan_freq_val"
+            android:summary="Beacon scan frequency"
+            android:defaultValue="2500"/>
+    </PreferenceCategory>
+
+</PreferenceScreen>

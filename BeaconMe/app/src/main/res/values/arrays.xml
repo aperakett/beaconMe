@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="scan_freq">
+        <item name="1">Every second</item>
+        <item name="2.5">Every two and a half seconds</item>
+        <item name="5">Every five seconds</item>
+        <item name="10">Every ten seconds</item>
+
+    </string-array>
+    <string-array name="scan_freq_val">
+        <item name="1">1500</item>
+        <item name="2.5">2500</item>
+        <item name="5">5500</item>
+        <item name="10">10500</item>
+
+    </string-array>
+</resources>

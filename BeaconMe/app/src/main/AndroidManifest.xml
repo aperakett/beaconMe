@@ -44,6 +44,24 @@
             android:label="@string/title_activity_my_associations"
             android:screenOrientation="portrait">
         </activity>
+
+        <activity
+            android:name=".BeaconCategory"
+            android:label="Categories"
+            android:screenOrientation="portrait">
+        </activity>
+
+        <activity
+            android:name=".BeaconFilter"
+            android:label="Filtered Results"
+            android:screenOrientation="portrait">
+        </activity>
+
+        <activity
+            android:name=".BeaconSettings"
+            android:label="Settings"
+            android:screenOrientation="portrait" >
+        </activity>
     </application>
 
 </manifest>

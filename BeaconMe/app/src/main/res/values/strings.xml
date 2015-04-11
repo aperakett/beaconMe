@@ -5,6 +5,7 @@
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
     <string name="scan">Scan</string>
+    <string name="cat">Categories</string>
 
 
     // Strings used by the scanner service
@@ -29,6 +30,12 @@
     <string name="title_activity_my_associations">MyBeacons</string>
     <string name="my_beacons">My Beacons</string>
     <string name="delete">Delete</string>
+
+    // Resources used by categories
+    <string name="apply_button">Apply</string>
+    <string name="output_activity">OutputActivity</string>
+    <string name="selected_text">Your selected categories:</string>
+    <string name="nearby_text">Nearby beacons with your categories:</string>
 
 
 </resources>
