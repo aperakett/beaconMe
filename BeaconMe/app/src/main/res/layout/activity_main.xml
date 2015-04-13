@@ -12,11 +12,68 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Test"
-        android:id="@+id/button"
-        android:onClick="connectAndGet"
+        android:text="Write To File"
+        android:id="@+id/btn_write_file"
         android:layout_below="@+id/textView"
+        android:layout_marginTop="63dp"
+        android:onClick="mWriteToFile"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Read From File"
+        android:id="@+id/btn_read_file"
+        android:layout_alignTop="@+id/btn_write_file"
+        android:layout_toEndOf="@+id/btn_write_file"
+        android:layout_marginStart="15dp"
+        android:onClick="mReadFromFile" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Delete File"
+        android:id="@+id/btn_delete_file"
+        android:layout_marginTop="15dp"
+        android:onClick="mDeleteFile"
+        android:layout_below="@+id/btn_write_file"
         android:layout_alignParentStart="true"
-        android:layout_marginTop="72dp" />
+        android:layout_alignEnd="@+id/btn_write_file" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Update File"
+        android:id="@+id/btn_update_file"
+        android:onClick="mUpdateFile"
+        android:layout_alignTop="@+id/btn_delete_file"
+        android:layout_alignStart="@+id/btn_read_file" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Login"
+        android:id="@+id/btn_login"
+        android:layout_centerVertical="true"
+        android:layout_alignLeft="@+id/btn_delete_file"
+        android:onClick="mLogin" />
+
+    <Button
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:text="Add Beacon"
+    android:id="@+id/btn_add"
+    android:onClick="mAddBeacon"
+    android:layout_alignTop="@+id/btn_login"
+    android:layout_toEndOf="@+id/btn_delete_file" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Update Beacon"
+        android:id="@+id/button"
+        android:onClick="mUpdateBeacon"
+        android:layout_below="@+id/btn_login"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="38dp" />
 
 </RelativeLayout>
