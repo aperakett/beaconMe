@@ -1,127 +1,130 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:id="@+id/categories"
-    android:padding="4dp">
-
-    <FrameLayout
-        android:layout_width="fill_parent"
-        android:layout_height="match_parent"
-        android:background="@drawable/border"
-        android:layout_margin="3dp"
+    android:layout_height="wrap_content">
+    <LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:orientation="vertical"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/categories"
         android:padding="4dp">
 
-        <TextView
+        <FrameLayout
             android:layout_width="fill_parent"
             android:layout_height="match_parent"
-            android:text="@string/categories_beacon_info"
-            android:textSize="@dimen/add_beacon_association_label_size"
-            android:layout_gravity="top|left"/>
+            android:background="@drawable/border"
+            android:layout_margin="3dp"
+            android:padding="4dp">
 
-        <TextView
-            android:layout_width="fill_parent"
-            android:layout_height="match_parent"
-            android:id="@+id/beacon_info"
-            android:layout_margin="10dp"
-            android:gravity="center" />
-    </FrameLayout>
+            <TextView
+                android:layout_width="fill_parent"
+                android:layout_height="match_parent"
+                android:text="@string/categories_beacon_info"
+                android:textSize="@dimen/add_beacon_association_label_size"
+                android:layout_gravity="top|left"/>
 
+            <TextView
+                android:layout_width="fill_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/beacon_info"
+                android:layout_margin="10dp"
+                android:gravity="center" />
+        </FrameLayout>
 
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@drawable/border"
-        android:layout_margin="3dp"
-        android:padding="2dp">
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:text="@string/categories"
-            android:textSize="@dimen/add_beacon_association_label_size"/>
-
-        <RelativeLayout
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content">
-
-            <Spinner
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="left"
-                android:paddingRight="30dp"
-                android:textAlignment="center"
-                android:id="@+id/categorySpinner"
-                android:prompt="@string/categories"/>
-
-            <ImageView
-                android:layout_height="30dp"
-                android:layout_width="30dp"
-                android:layout_alignParentRight="true"
-                android:layout_centerVertical="true"
-                android:src="@drawable/drop_down_arrow" />
-        </RelativeLayout>
-
-    </FrameLayout>
-
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@drawable/border"
-        android:layout_margin="3dp"
-        android:padding="2dp">
-
-        <RelativeLayout
+        <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:background="@drawable/border"
+            android:layout_margin="3dp"
+            android:padding="2dp">
 
             <TextView
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/associationInputNameTag"
-                android:text="@string/name"
+                android:layout_height="match_parent"
+                android:text="@string/categories"
                 android:textSize="@dimen/add_beacon_association_label_size"/>
 
-            <EditText
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="@dimen/device_list_font_size"
-                android:id="@+id/associationInputName"
-                android:layout_below="@+id/associationInputNameTag" />
-        </RelativeLayout>
+            <RelativeLayout
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content">
 
-    </FrameLayout>
+                <Spinner
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="left"
+                    android:paddingRight="30dp"
+                    android:textAlignment="center"
+                    android:id="@+id/categorySpinner"
+                    android:prompt="@string/categories"/>
 
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@drawable/border"
-        android:layout_margin="3dp"
-        android:padding="2dp">
+                <ImageView
+                    android:layout_height="30dp"
+                    android:layout_width="30dp"
+                    android:layout_alignParentRight="true"
+                    android:layout_centerVertical="true"
+                    android:src="@drawable/drop_down_arrow" />
+            </RelativeLayout>
 
-        <RelativeLayout
+        </FrameLayout>
+
+        <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:background="@drawable/border"
+            android:layout_margin="3dp"
+            android:padding="2dp">
 
-            <TextView
+            <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/ass"
-                android:id="@+id/associationInputTag"
-                android:textSize="@dimen/add_beacon_association_label_size"/>
+                android:orientation="horizontal">
 
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/associationInputNameTag"
+                    android:text="@string/name"
+                    android:textSize="@dimen/add_beacon_association_label_size"/>
 
-            <EditText
+                <EditText
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="@dimen/device_list_font_size"
+                    android:id="@+id/associationInputName"
+                    android:layout_below="@+id/associationInputNameTag" />
+            </RelativeLayout>
+
+        </FrameLayout>
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/border"
+            android:layout_margin="3dp"
+            android:padding="2dp">
+
+            <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textSize="@dimen/device_list_font_size"
-                android:id="@+id/associationInput"
-                android:layout_below="@+id/associationInputTag"/>
-        </RelativeLayout>
-    </FrameLayout>
+                android:orientation="horizontal">
 
-</LinearLayout>
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/ass"
+                    android:id="@+id/associationInputTag"
+                    android:textSize="@dimen/add_beacon_association_label_size"/>
+
+
+                <EditText
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="@dimen/device_list_font_size"
+                    android:id="@+id/associationInput"
+                    android:layout_below="@+id/associationInputTag"/>
+            </RelativeLayout>
+        </FrameLayout>
+
+    </LinearLayout>
+</ScrollView>

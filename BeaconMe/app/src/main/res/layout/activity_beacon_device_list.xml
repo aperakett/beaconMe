@@ -12,7 +12,8 @@
     tools:context="no.uit.ods.beaconme.BeaconScanListActivity"
     android:id="@+id/le_list"
     android:orientation="vertical"
-    android:weightSum="1">
+    android:weightSum="1"
+    android:background="@android:color/white">
 
     <TextView
         android:layout_width="wrap_content"
@@ -21,9 +22,21 @@
         android:textSize="@dimen/device_list_headline_font_size"
         android:text="@string/discovered_beacons"
         android:textAlignment="center"
+        android:paddingTop="6dp"
         android:id="@+id/beacon_scan_list_headline"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true" />
+
+    <ToggleButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="sort"
+        android:textOff="Sort"
+        android:textOn="Stop"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:textSize="@dimen/abc_text_size_small_material"
+        android:id="@+id/toggleButton" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -33,6 +46,7 @@
         android:textSize="@dimen/device_list_no_beacon_found_size"
         android:text="@string/no_beacons_found"
         android:id="@+id/noBeaconFound"
+        android:paddingTop="6dp"
         android:layout_centerHorizontal="true" />
 
     <ListView
@@ -40,8 +54,10 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/beacon_scan_list_headline"
         android:id="@+id/beaconListView"
-        android:divider="@android:color/transparent"
-        android:dividerHeight="6dp" />
+        android:divider="@android:color/darker_gray"
+        android:paddingTop="6dp"
+        android:dividerHeight="1dp"
+        android:layout_alignEnd="@+id/toggleButton" />
 
 </RelativeLayout>
 
