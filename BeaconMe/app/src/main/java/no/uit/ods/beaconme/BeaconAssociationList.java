@@ -52,11 +52,7 @@ public class BeaconAssociationList {
                 char[] buf = new char[((int) assFile.length())];
                 fr.read(buf);
                 fr.close();
-
-                Log.i("BeaconAssociationList", "Reading list from storage(" + String.valueOf(assFile.length()) + "):"  + new String(buf));
-
                 associations = new JSONArray(new String(buf));
-                Log.i("BeaconAssociationList", "json: " + associations.toString());
             } catch (Exception e) {
                 Log.e("BeaconAssociationList", e.getMessage());
                 e.printStackTrace();
@@ -88,7 +84,7 @@ public class BeaconAssociationList {
      * which might cause this exception. It might also be caused when inserting
      * the JSONObject into the JSONArray.
      */
-    public void add (Beacon beacon, String name, String value, int notify) throws JSONException {
+    public void add (Beacon beacon, String name, String value, int notify) throws JSONException, IOException {
         int i = this.contains(beacon);
         // Beacon is not in list, create a new entry
         if (i == -1) {
@@ -101,6 +97,7 @@ public class BeaconAssociationList {
             json.put("value", value);
             json.put("notify", notify);
             associations.put(json);
+
         }
         // The beacon is in list, the values must be updated,
         else {
@@ -117,6 +114,7 @@ public class BeaconAssociationList {
             json.put("name", name);
             json.remove("notify");
         }
+        this.commit();
     }
 
     /**

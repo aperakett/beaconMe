@@ -24,7 +24,7 @@
         android:textSize="@dimen/device_list_font_size_uuid"
         android:id="@+id/le_uuid"
         android:paddingLeft="@dimen/device_list_icon_padding_size"
-        android:layout_centerHorizontal="true"/>
+        />
 
     <TextView
         android:layout_width="wrap_content"
@@ -33,25 +33,34 @@
         android:id="@+id/le_uuid_major_minor"
         android:paddingLeft="@dimen/device_list_icon_padding_size"
         android:layout_below="@id/le_uuid"
-        android:layout_centerHorizontal="true"/>
+        />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="@dimen/device_list_font_size_uuid"
+        android:id="@+id/le_mac"
+        android:paddingLeft="@dimen/device_list_icon_padding_size"
+        android:layout_below="@id/le_uuid_major_minor"
+        />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="@dimen/device_list_font_size"
         android:id="@+id/le_range"
-        android:layout_below="@id/le_uuid_major_minor"
+        android:layout_below="@id/le_mac"
         android:paddingLeft="@dimen/device_list_icon_padding_size"
-        android:layout_centerHorizontal="true"/>
+        />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="@dimen/device_list_font_size"
         android:id="@+id/le_notify_name"
-        android:layout_below="@id/le_uuid_major_minor"
+        android:layout_below="@id/le_mac"
         android:paddingLeft="@dimen/device_list_icon_padding_size"
-        android:layout_centerHorizontal="true"/>
+        />
 
 
 </RelativeLayout>
