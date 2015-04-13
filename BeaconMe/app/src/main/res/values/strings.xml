@@ -36,6 +36,7 @@
     <string name="output_activity">OutputActivity</string>
     <string name="selected_text">Your selected categories:</string>
     <string name="nearby_text">Nearby beacons with your categories:</string>
+    <string name="category_text">Select your categories:</string>
 
 
 </resources>

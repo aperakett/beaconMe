@@ -32,8 +32,8 @@ import org.json.JSONArray;
 public class BeaconClient {
     private String  username 	    = "";
     private String  password 	    = "";
-    private String  serverUrl       = "http://beaconme.ddns.net:3000"; //192.168.1.179
-//    private String  serverUrl       = "http://192.168.1.179:3000"; //192.168.1.179
+//    private String  serverUrl       = "http://beaconme.ddns.net:3000"; //192.168.1.179
+    private String  serverUrl       = "http://192.168.1.179:3000";
 
     /**
      *

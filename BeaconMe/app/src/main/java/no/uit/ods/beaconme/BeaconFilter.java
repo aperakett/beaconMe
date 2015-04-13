@@ -1,8 +1,14 @@
 package no.uit.ods.beaconme;
 
+import android.app.AlertDialog;
+import android.app.NotificationManager;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.ContextMenu;
@@ -15,7 +21,9 @@ import android.widget.AbsListView;
 import android.widget.Adapter;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -27,6 +35,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -39,6 +49,7 @@ import java.util.concurrent.TimeUnit;
 */
 public class BeaconFilter extends ActionBarActivity implements AbsListView.OnItemClickListener {
     private BeaconScannerService cService;
+    final ArrayList<testBeacon> finalResultList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,7 +91,7 @@ public class BeaconFilter extends ActionBarActivity implements AbsListView.OnIte
         // Get the filtered beacons back in a list (this way we still got access to relevant information)
         final ArrayList<testBeacon> resultList = filterResults(checkedArray, categoryList, beaconList);
 
-        final ArrayList<testBeacon> finalResultList = new ArrayList<>();
+
 
         ArrayAdapter<String> outputAdapter = new ArrayAdapter<>(this, R.layout.beacon_selected_results, R.id.selectedName, checkedArray);
         final ResultAdapter resultAdapter = new ResultAdapter(this, finalResultList);
@@ -103,10 +114,20 @@ public class BeaconFilter extends ActionBarActivity implements AbsListView.OnIte
                         if (t.getMac().equals(cService.getList().getItem(i).getAddress())) {
                             if(!finalResultList.contains(t)) {
                                 t.distance = cService.getList().getItem(i).getDistance();
-                                Beacon tmpBeacon = cService.getList().getItem(i);
-                                //t.association = cService.getAssociation(tmpBeacon);
+                                try {
+                                    t.association = cService.getAssociationList().getAssociation(cService.getList().getItem(i));
+                                    if (t.association != null) {
+                                        Log.e("t.association", t.association.toString());
+                                    }
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
 
+                                notification(t);
+                                Log.e("NO!", "NEI NO!");
                                 finalResultList.add(t);
+
+
                             }
                             // System.out.println(t.getName());
                         }
@@ -116,6 +137,7 @@ public class BeaconFilter extends ActionBarActivity implements AbsListView.OnIte
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
+
                         resultAdapter.notifyDataSetChanged();
                     }
                 });
@@ -132,15 +154,37 @@ public class BeaconFilter extends ActionBarActivity implements AbsListView.OnIte
         scan.run();
     }
 
-    @Override
-    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+    public void notification(testBeacon beacon){
+        NotificationCompat.Builder mBuilder =
+                new NotificationCompat.Builder(this)
+                        .setSmallIcon(R.drawable.beacon)
+                        .setContentTitle("Selected beacon nearby!")
+                        .setContentText("Sports");
+
+        // Sets an ID for the notification
+        int mNotificationId = 001;
+        // Gets an instance of the NotificationManager service
+        NotificationManager mNotifyMgr =
+                (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        // Builds the notification and issues it.
+        mNotifyMgr.notify(mNotificationId, mBuilder.build());
     }
 
-    public boolean onContextItemSelected(MenuItem item) {
-        // Get the beacon number clicked on
-        final int beaconNumber = ((AdapterView.AdapterContextMenuInfo) item.getMenuInfo()).position;
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        String ass = finalResultList.get(position).getAssociation();
+        if (ass == null) {
+            return;
+        }
 
-        return true;
+        if (ass.startsWith("www.") || ass.endsWith(".*")) {
+            ass = "http://" + ass;
+        }
+
+        if (ass.startsWith("http://")) {
+            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(ass));
+            startActivity(browserIntent);
+        }
     }
 
     @Override
@@ -148,6 +192,62 @@ public class BeaconFilter extends ActionBarActivity implements AbsListView.OnIte
         super.onCreateContextMenu(menu, v, menuInfo);
         MenuInflater inflater = this.getMenuInflater();
         inflater.inflate(R.menu.menu_context_device_list, menu);
+    }
+
+    public boolean onContextItemSelected(MenuItem item) {
+        // Get the beacon number clicked on
+        final int beaconNumber = ((AdapterView.AdapterContextMenuInfo) item.getMenuInfo()).position;
+
+        switch (item.getItemId()) {
+            // add beacon association by getting user input which
+            // associated with the last clicked beacon
+            case R.id.menu_context_device_list_add:
+                assLocalAdd(beaconNumber);
+                break;
+        }
+        return true;
+    }
+
+    public void assLocalAdd (final int beaconNumber) {
+        View layout = getLayoutInflater().inflate(R.layout.beacon_add_local_association_alert, (ViewGroup)findViewById(R.id.beacon_add_local));
+        AlertDialog.Builder alert = new AlertDialog.Builder(this);
+
+        //Get user input
+        final EditText inputName = (EditText)layout.findViewById(R.id.beacon_add_local_name);
+        final EditText inputAss  = (EditText)layout.findViewById(R.id.beacon_add_local_ass);
+        final Spinner spinner   = (Spinner) layout.findViewById(R.id.beacon_add_notificationSpinner);
+
+        final List<String> list = Arrays.asList("Don't notify", "Less than 1m", "Less than 15m", "Allways notify");
+
+        // create adapter with arraylist and populate spinner with list
+        ArrayAdapter adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, list);
+        spinner.setAdapter(adapter);
+
+        alert.setView(layout);
+        alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int button) {
+                Integer notify  = list.indexOf(spinner.getSelectedItem().toString());
+                String name     = inputName.getText().toString();
+                String ass      = inputAss.getText().toString();
+
+                try {
+                    for (int i = 0; i < cService.getList().getCount(); i++) {
+                        if (finalResultList.get(beaconNumber).getMac().equals(cService.getList().getItem(i).getAddress())) {
+                            cService.getAssociationList().add(cService.getList().getItem(i), name, ass, notify);
+                        }
+                    }
+
+                } catch (JSONException e) {
+                    Log.e("BEaconScanListActivity", "Failed to add assocaition: " + e.getMessage());
+                }
+            }
+        });
+        alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int button) {
+
+            }
+        });
+        alert.show();
     }
 
     // This method gets a JSONArray of categories from the back-end system and converts it to
@@ -398,7 +498,12 @@ public class BeaconFilter extends ActionBarActivity implements AbsListView.OnIte
 
             content.name.setText(beacon.getName());
             content.category.setText(beacon.getCatName());
-            content.distance.setText("( Approximately" + " " + String.format("%.0f", beacon.getDistance()) + " " + "meters )");
+            content.distance.setText("-" + " " + "Approx." + " " + String.format("%.0f", beacon.getDistance()) + "m" + " " + "away");
+
+            if (beacon.getAssociation()== null ) {
+                beacon.association = "Nothing yet";
+            }
+
             content.association.setText("Linked to: " + beacon.getAssociation());
             return view;
         }
