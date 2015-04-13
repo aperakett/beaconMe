@@ -312,7 +312,8 @@ public class BeaconScanListActivity extends Activity implements AbsListView.OnIt
      * @throws InterruptedException Might be thrown due to the network operations.
      */
     private void assRemoteAdd (final int beaconNumber) throws JSONException, InterruptedException {
-        final BeaconClient bClient     = new BeaconClient();
+        // final BeaconClient bClient     = new BeaconClient();
+        final BeaconClient bClient = BeaconClient.getInstance();
         JSONObject beaconInfoBackend   = null;
 
         // Fetch categories from back- end, if this fails, notify user and abort
