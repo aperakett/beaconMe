@@ -257,17 +257,20 @@ public class BeaconFilter extends ActionBarActivity implements AbsListView.OnIte
         String filename = "SavedBeacons.sav";
 
         //  set a user in the BeaconClient class
+        /*
         BeaconClient bc = null;
         try {
             bc = new BeaconClient("admin@server.com", "admin123");
         } catch (InterruptedException e) {
             Log.e("BeaconFilter", "Connect to back-end system failed with: " + e.getMessage());
         }
+        */
+        BeaconClient bc = BeaconClient.getInstance();
 
         // Get a JSONArray from the server with the categories
         JSONArray beaconArray = null;
         try {
-            beaconArray = bc.getBeacons("", "", 0, "", "", "", "");
+            beaconArray = bc.getBeacons("", "", 0, "", "", "", "", getBaseContext());
         } catch (InterruptedException e) {
             Log.e("BeaconFilter", "getBeacons from back-end system failed with: " + e.getMessage());
         }

@@ -67,17 +67,17 @@ public class BeaconCategory extends ActionBarActivity implements View.OnClickLis
         String filename = "SavedCat.sav";
 
         //  set a user in the BeaconClient class
-        BeaconClient bc = null;
-        try {
-            bc = new BeaconClient("admin@server.com", "admin123");
-        } catch (InterruptedException e) {
-            Log.e("Category", "Connect to back-end system failed with: " + e.getMessage());
-        }
+        BeaconClient bc = BeaconClient.getInstance();
+        // try {
+            // bc = new BeaconClient("admin@server.com", "admin123");
+        // } catch (InterruptedException e) {
+        //     Log.e("Category", "Connect to back-end system failed with: " + e.getMessage());
+        // }
 
         // Get a JSONArray from the server with the categories
         JSONArray catArray = null;
         try {
-            catArray = bc.getCategories();
+            catArray = bc.getCategories(getBaseContext());
         } catch (InterruptedException e) {
             Log.e("Category", "getCategories from back-end system failed with: " + e.getMessage());
         }

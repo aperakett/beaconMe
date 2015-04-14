@@ -312,11 +312,12 @@ public class BeaconScanListActivity extends Activity implements AbsListView.OnIt
      * @throws InterruptedException Might be thrown due to the network operations.
      */
     private void assRemoteAdd (final int beaconNumber) throws JSONException, InterruptedException {
-        final BeaconClient bClient     = new BeaconClient("admin@server.com", "admin123");
+        // final BeaconClient bClient     = new BeaconClient();
+        final BeaconClient bClient = BeaconClient.getInstance();
         JSONObject beaconInfoBackend   = null;
 
         // Fetch categories from back- end, if this fails, notify user and abort
-        final JSONArray categories     = bClient.getCategories();
+        final JSONArray categories     = bClient.getCategories(this.getBaseContext());
         if (categories == null) {
             Log.i("BeaconScanListActivity", "Failed to fetch categories from server");
             Toast.makeText(getApplicationContext(), "Failed to fetch categories from server", Toast.LENGTH_SHORT).show();
@@ -364,10 +365,11 @@ public class BeaconScanListActivity extends Activity implements AbsListView.OnIt
         // attempt to get beaconinformation from the backend system
         final JSONArray beaconHits;
 
-        beaconHits = bClient.getBeacons("", beacon.getUuid(), 0, "", "", String.valueOf(beacon.getMajor()), String.valueOf(beacon.getMinor()));
-Log.e("BeaconListActivity", beaconHits.toString());
+        beaconHits = bClient.getBeacons("", beacon.getUuid(), 0, "", "", String.valueOf(beacon.getMajor()), String.valueOf(beacon.getMinor()), getBaseContext());
+
         // append beaconinfo to the alert dialogue view
         if (beaconHits != null && beaconHits.length() > 0) {
+            Log.e("BeaconListActivity", beaconHits.toString());
             beaconInfoBackend = beaconHits.getJSONObject(0);
             String info = "\n\nBeacon Name:\n" +
                     beaconInfoBackend.get("name") +
@@ -429,7 +431,8 @@ Log.e("BeaconListActivity", beaconHits.toString());
                                 cat,
                                 beacon.getAddress(),
                                 String.valueOf(beacon.getMajor()),
-                                String.valueOf(beacon.getMinor()));
+                                String.valueOf(beacon.getMinor()),
+                                getBaseContext());
                     }
                         // if the beacon is registered, change it to new values
                     else {
@@ -439,7 +442,8 @@ Log.e("BeaconListActivity", beaconHits.toString());
                                 cat,
                                 beacon.getAddress(),
                                 String.valueOf(beacon.getMajor()),
-                                String.valueOf(beacon.getMinor()));
+                                String.valueOf(beacon.getMinor()),
+                                getBaseContext());
                     }
                 }
                 catch (InterruptedException e) {
