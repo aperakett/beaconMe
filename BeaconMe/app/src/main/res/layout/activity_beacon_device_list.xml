@@ -13,7 +13,7 @@
     android:id="@+id/le_list"
     android:orientation="vertical"
     android:weightSum="1"
-    android:background="@android:color/white">
+    android:background="#ffe1e1e1">
 
     <TextView
         android:layout_width="wrap_content"
@@ -57,7 +57,9 @@
         android:divider="@android:color/darker_gray"
         android:paddingTop="6dp"
         android:dividerHeight="1dp"
-        android:layout_alignEnd="@+id/toggleButton" />
+        android:layout_alignEnd="@+id/toggleButton"
+        android:paddingRight="-4dp"
+        android:textFilterEnabled="true" />
 
 </RelativeLayout>
 

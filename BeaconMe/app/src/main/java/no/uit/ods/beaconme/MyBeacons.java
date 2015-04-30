@@ -77,7 +77,7 @@ public class MyBeacons extends ActionBarActivity implements AbsListView.OnItemCl
     }
 
     /**
-     * The method is launched when a long click is done on a listitem in the view.
+     * The method is launched when a long click is done on a listitem in the view. <br>
      *
      * An action is performed depending on the choice in the contextmenu.
      *
@@ -135,7 +135,7 @@ public class MyBeacons extends ActionBarActivity implements AbsListView.OnItemCl
     }
 
     /**
-     * Adapter- class to populate the listview.
+     * Adapter- class instance used to populate the listview.
      */
     private class MyBeaconListAdapter extends BaseAdapter {
         private LayoutInflater          inflater;
@@ -201,6 +201,9 @@ public class MyBeacons extends ActionBarActivity implements AbsListView.OnItemCl
         }
     }
 
+    /**
+     *  Helper class to populate a listitem in the listview.
+     */
     private class ViewHolderBeacon {
         TextView    deviceName;
         TextView    deviceValue;

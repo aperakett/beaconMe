@@ -1,10 +1,6 @@
 package no.uit.ods.beaconme;
 
-import android.app.Notification;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.content.Context;
-import android.content.Intent;
 import android.util.Log;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -16,8 +12,6 @@ import java.io.IOException;
 
 
 /**
- * Author: Espen Maeland Wilhelmsen, espen.wilhelmsen@gmail.com<br>
- *
  * Implements a BTLE Association list which makes it possible to
  * search and find values depending the id and uuid of the beacon.<br>
  *
@@ -30,6 +24,8 @@ import java.io.IOException;
  *
  * The associations are saved to a file named "/associations" to make
  * the data persistent.
+ *
+ * Author: Espen Maeland Wilhelmsen, espen.wilhelmsen@gmail.com<br>
  */
 public class BeaconAssociationList {
     private JSONArray   associations;
@@ -113,6 +109,7 @@ public class BeaconAssociationList {
             json.remove("name");
             json.put("name", name);
             json.remove("notify");
+            json.put("notify", notify);
         }
         this.commit();
     }
@@ -229,51 +226,41 @@ public class BeaconAssociationList {
         return beaconNum;
     }
 
-    public void notify (Beacon beacon, Context context) throws JSONException {
+    /**
+     * Returns true if the specified beacon is within the range set in the
+     * association.
+     *
+     * @param beacon The beacon which should be checked.
+     * @return True or false is returned depending the value of notify
+     * in the association and the distance of the beacon.
+     * @throws JSONException
+     */
+    public boolean notify (Beacon beacon) throws JSONException {
         int idx = contains(beacon);
         if (idx != -1) {
             JSONObject ass = ((JSONObject) this.associations.get(idx));
+
             //check if notification must be issued.
             Integer notify = ass.getInt("notify");
             double distance = beacon.getDistance();
             if (notify == 1 && distance < 1.0) {
                 Log.e("NOTIFICATION", "NEAR distance: " + String.format("%.2f", distance));
+                return true;
             } else if (notify == 2 && distance < 15.0) {
                 Log.e("NOTIFICATION", "MID distance: " + String.format("%.2f", distance));
+                return true;
             } else if (notify == 3) {
                 Log.e("NOTIFICATION", "FAR distance: " + String.format("%.2f", distance));
-            }
-
-            if (notify != 0) {
-                Intent intent = new Intent(context.getApplicationContext(), MainActivity.class);
-                PendingIntent pIntent = PendingIntent.getActivity(context, 0, intent, 0);
-
-                long[] pattern = {220,220,220,220,220};
-                Notification n = new Notification.Builder(context)
-                    .setSmallIcon(R.drawable.beacon)
-                    .setContentTitle("Beacon proximity")
-                    .setContentText("You are approximatly " + String.format("%.2f", distance) + "m from " + ass.getString("name"))
-                    .setContentIntent(pIntent)
-                    .setAutoCancel(true)
-                    .setOnlyAlertOnce(true)
-                    .setVibrate(pattern)
-                    .build();
-
-                NotificationManager nMan = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-                nMan.notify(0, n);
-                synchronized (n) {
-                    n.notify();
-                }
-                Log.e("BLABLABLA", "notifying.....");
+                return true;
             }
         }
-
+        return false;
     }
 
     /**
      * Translate the notify parameter to something readable
      *
-     * @param notify The notify variabnle to be translated
+     * @param notify The notify variable to be translated
      * @return Returns a String with a readable text describing the
      * notify variable.
      */
@@ -282,11 +269,11 @@ public class BeaconAssociationList {
             case 0:
                 return "Never";
             case 1:
-                return "< 1m";
+                return "Immediate";
             case 2:
-                return "< 15m";
+                return "Near";
             case 3:
-                return "Always";
+                return "Far";
             default:
                 return "Not set";
         }
@@ -314,5 +301,4 @@ public class BeaconAssociationList {
         fw.flush();
         fw.close();
     }
-
 }

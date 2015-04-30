@@ -1,14 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+
+
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:padding="4dp"
+    android:id="@+id/categories"
+    android:windowSoftInputMode="adjustResize|stateHidden">
+
     <LinearLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
         android:orientation="vertical"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/categories"
-        android:padding="4dp">
+        android:layout_height="wrap_content">
 
         <FrameLayout
             android:layout_width="fill_parent"
@@ -92,7 +96,7 @@
                     android:layout_height="wrap_content"
                     android:textSize="@dimen/device_list_font_size"
                     android:id="@+id/associationInputName"
-                    android:layout_below="@+id/associationInputNameTag" />
+                    android:layout_below="@+id/associationInputNameTag"/>
             </RelativeLayout>
 
         </FrameLayout>
@@ -125,6 +129,5 @@
                     android:layout_below="@+id/associationInputTag"/>
             </RelativeLayout>
         </FrameLayout>
-
     </LinearLayout>
 </ScrollView>
