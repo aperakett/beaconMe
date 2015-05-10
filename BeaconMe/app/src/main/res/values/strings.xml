@@ -38,6 +38,7 @@
     <string name="nearby_text">Nearby beacons with your categories:</string>
     <string name="category_text">Select your categories:</string>
     <string name="please_wait">Please wait, getting a few things ready for you..</string>
+    <string name="menu_save">Save on phone</string>
 
 
 </resources>

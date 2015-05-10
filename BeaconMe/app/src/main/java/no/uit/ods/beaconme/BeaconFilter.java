@@ -293,7 +293,7 @@ public class BeaconFilter extends ActionBarActivity implements AbsListView.OnIte
     public void onCreateContextMenu(ContextMenu menu, View view, ContextMenu.ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, view, menuInfo);
         MenuInflater inflater = this.getMenuInflater();
-        inflater.inflate(R.menu.menu_context_device_list, menu);
+        inflater.inflate(R.menu.menu_context_filter_list, menu);
     }
 
 
@@ -310,7 +310,7 @@ public class BeaconFilter extends ActionBarActivity implements AbsListView.OnIte
         switch (item.getItemId()) {
             // add beacon association by getting user input which
             // associated with the last clicked beacon
-            case R.id.menu_context_device_list_add:
+            case R.id.menu_context_device_list_save:
                 assLocalAdd(beaconNumber);
                 break;
         }
@@ -332,7 +332,7 @@ public class BeaconFilter extends ActionBarActivity implements AbsListView.OnIte
         final EditText inputAss  = (EditText)layout.findViewById(R.id.beacon_add_local_ass);
         final Spinner spinner   = (Spinner) layout.findViewById(R.id.beacon_add_notificationSpinner);
 
-        final List<String> list = Arrays.asList("Don't notify", "Less than 1m", "Less than 15m", "Allways notify");
+        final List<String> list = Arrays.asList("Don't notify", "Less than 1m", "Less than 15m", "Always notify");
 
         // create adapter with arraylist and populate spinner with list
         ArrayAdapter adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, list);
@@ -348,11 +348,18 @@ public class BeaconFilter extends ActionBarActivity implements AbsListView.OnIte
                 try {
                     for (int i = 0; i < cService.getList().getCount(); i++) {
                         if (finalResultList.get(beaconNumber).getMac().equals(cService.getList().getItem(i).getAddress())) {
-                            cService.getAssociationList().add(cService.getList().getItem(i), name, ass, notify);
+                            try {
+                                cService.getAssociationList().add(cService.getList().getItem(i), name, ass, notify);
+                            } catch (Exception e) {
+                                Log.e("BEaconScanListActivity", "Failed to add assocaition: " + e.getMessage());
+                            }
+                            /*cService.getAssociationList().add(cService.getList().getItem(i), name, ass, notify);
+                            mService.getAssociationList().add(mList.getItem(beaconNumber), name, ass, notify);
+                            cService.getAssociationList().add(cService.getList().getItem(i), name, ass, notify);*/
                         }
                     }
 
-                } catch (JSONException e) {
+                } catch (Exception e) {
                     Log.e("BEaconScanListActivity", "Failed to add assocaition: " + e.getMessage());
                 }
             }
