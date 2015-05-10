@@ -32,10 +32,12 @@ import org.json.JSONArray;
  * @since	2015-04-10
  */
 public class BeaconClient {
+
     private String  serverUrl    = "http://beaconme.ddns.net:3000";
     private String  apiKey       = "";
     private int     connTimeOut  = 20000;   // In milliseconds
     private static  BeaconClient instance = null;
+
 
     protected BeaconClient() {
         // Exists only to defeat instantiation.

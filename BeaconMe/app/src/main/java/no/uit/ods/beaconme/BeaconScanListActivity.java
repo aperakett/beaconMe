@@ -242,7 +242,7 @@ public class BeaconScanListActivity extends Activity implements AbsListView.OnIt
      *
      * @param beaconNumber The number of beacon selected from the listview.
      */
-    private void assLocalAdd (final int beaconNumber) {
+    public void assLocalAdd (final int beaconNumber) {
         View layout = getLayoutInflater().inflate(R.layout.beacon_add_local_association_alert, (ViewGroup)findViewById(R.id.beacon_add_local));
         AlertDialog.Builder alert = new AlertDialog.Builder(this);
 
