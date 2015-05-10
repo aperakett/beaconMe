@@ -8,6 +8,11 @@
             android:summary="Turn all notifications on/off"
             android:defaultValue="true" />
         <CheckBoxPreference
+            android:key="personal_notifications"
+            android:title="Personal association notifications"
+            android:summary="Turn personal notifications on/off"
+            android:defaultValue="true" />
+        <CheckBoxPreference
             android:key="result_notifications"
             android:title="Filtered notifications"
             android:summary="Turn filter notifications on/off"
