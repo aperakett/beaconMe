@@ -75,6 +75,7 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
 
         // Instantiate singleton BeaconClient class
         BeaconClient b = BeaconClient.getInstance();
+        b.setConnTimeOut(3000);
         try {
             b.authenticate("admin@server.com", "admin123", getBaseContext());
         } catch (InterruptedException e) {
@@ -84,6 +85,7 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
         } catch (JSONException e) {
             e.printStackTrace();
         }
+
 
         final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
 
@@ -236,11 +238,13 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
         }
 
         return false;
+
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        Log.i("MainActivity", "onDestroy()");
         mService.stopSelf();
         unbindService(mConnection);
     }

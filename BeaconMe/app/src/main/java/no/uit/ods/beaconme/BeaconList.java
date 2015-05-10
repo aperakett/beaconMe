@@ -1,23 +1,20 @@
 package no.uit.ods.beaconme;
 
-import android.util.Log;
-
 import java.util.ArrayList;
 
 /**
- *  Author: Espen Mæland Wilhelmsen, espen.wilhelmsen@gmail.com
- *
  *  Storage class for the bluetooth low energy devices.
- *  The class is specialised to hold the Beacon class objects.
+ *  The class is specialised to hold the Beacon class objects. <br>
  *
  *  The add method adds a beacon only after checking if the address (MAC)
- *  of the beacon is allready in the list.
+ *  of the beacon is already in the list. <br>
  *
  *  The clear method of the class is based on the threshold
  *  variable in the Beacon class, if a beacon has a threshold of 0
  *  it's removed, if not it left in the list and the threshold is
  *  decreased.
  *
+ *  Author: Espen Mæland Wilhelmsen, espen.wilhelmsen@gmail.com *
  */
 public class BeaconList {
     private ArrayList<Beacon> list;
@@ -33,19 +30,19 @@ public class BeaconList {
     }
 
     /**
-     * Adds an instance of the Beacon class to the list.
+     * Adds an instance of the Beacon class to the list. <br>
      *
      * If the beacon is already in the list by first checking
      * with the get method if the beacon is previously inserted
      * in the list. If it is, the RSSI (signal level) of the beacon is
      * updated, and the threshold of the beacon is reset (the beacon is
      * visible, therefore the threshold is reset). If the beacon is not
-     * previously added, it's simply added.
+     * previously added, it's simply added. <br>
      *
      * The point of the threshold is to add delay to the removal of
      * a beacon in case for some reason a beacon is not seen in a scan-
      * period thus preventing beacons from being inserted and removed
-     * due to this.
+     * due to this. <br>
      *
      * @param beacon A instance of the beacon class that is to be added
      *               to the BeaconList.
@@ -63,16 +60,15 @@ public class BeaconList {
             b.resetThreshold();
             b.setUpdated(true);
         }
-
     }
 
     /**
      * Iterate the BeaconList and remove all beacons that have a
-     * threshold of 0 or less.
+     * threshold of 0 or less. <br>
      *
      * This method should be used between all scan intervals to remove
      * beacons that are out of range. The threshold provides a certain
-     * delay before the beacon is removed.
+     * delay before the beacon is removed. <br>
      *
      * The update boolean is reset so the beacons can have their data
      * updated again
@@ -147,8 +143,6 @@ public class BeaconList {
         return false;
     }
 
-    // fetch a beacon from the list
-
     /**
      * Gets a beacon from the BeaconList class, this method is very
      * similar to contains, expect that it returns a beacon.
@@ -180,15 +174,15 @@ public class BeaconList {
         return list.get(i);
     }
 
-                      /**
-     * Sorts the list on the distance variable in the Beacon class.
+    /**
+     * Sorts the list on the distance variable in the Beacon class
+     * with the insertionsort algorithm.
      *
      */
     public void sort() {
         if (list.size() <= 1)
             return;
 
-        // INSERTION SORT
         for (int i = 1; i < list.size(); i++) {
             double iDist = list.get(i).getDistance();
             if (iDist < list.get(i - 1).getDistance()) {
@@ -207,9 +201,17 @@ public class BeaconList {
                 }
             }
         }
+    }
 
-        /*
-        SELECTION SORT
+    /**
+     * Sorts the list on the distance variable in the Beacon class
+     * with the selectionsort algorithm.
+     *
+     */
+    public void selectionSort() {
+        if (list.size() <= 1)
+            return;
+
         for (int i = 0; i < list.size() - 1; i++) {
             for (int j = i + 1; j < list.size(); j++) {
                 if (list.get(i).getDistance() > list.get(j).getDistance()) {
@@ -219,10 +221,9 @@ public class BeaconList {
                     list.remove(i);
                     list.add(i, jBeacon);
                     list.add(j, iBeacon);
-                    Log.e("SORTING::::::", String.format("%.2f", iBeacon.getDistance()) + " / " + String.format("%.2f", jBeacon.getDistance()));
                 }
             }
         }
-        */
     }
+
 }

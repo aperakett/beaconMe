@@ -4,15 +4,15 @@ import android.bluetooth.BluetoothDevice;
 import java.util.Arrays;
 
 /**
- *  Author: Espen Mæland Wilhelmsen, espen.wilhelmsen@gmail.com
  *
  *  This class implements beacon. It holds the information about the beacon
- *   which is accessed through the bundled methods.
+ *   which is accessed through the bundled methods. <br>
  *
  *  The beacon have a variable threshold which is used to delay the
  *  beacon from being removed the beacon list to prevent beacons from
- *  beeing prematurly removed.
+ *  beeing prematurly removed. <br>
  *
+ *  Author: Espen Mæland Wilhelmsen, espen.wilhelmsen@gmail.com
  */
 public class Beacon {
     private String      name;
@@ -29,7 +29,7 @@ public class Beacon {
     final private int   initialThreshold = 3;
 
     /**
-     * Constructor method.
+     * Constructor method. <br>
      *
      * Requires a BluetoothDevice class item, a signal strength (RSSI)
      * and a scanRecord which is bundled with the leScan method of the
@@ -91,22 +91,22 @@ public class Beacon {
      * of the BluetoothDevice. So the UUID is not parsed to check
      * services offered by the BluetoothDevice. The format of the
      * UUID is set to be standard. I.e with dashes to make it easy
-     * to read.
+     * to read. <br>
      *
      * Set the major from beacon extracted from the scanRecord
      * of the BluetoothDevice. It's located in the advertising packet of the
      * beacon in bytes 26-27.
      * If the device is not broadcasting this information
-     * 0 is set.
+     * 0 is set. <br>
      *
      * Sets the minor extracted from the scanRecord
      * of the BluetoothDevice. It's located in the advertising packet of the
      * beacon in bytes 28-29
      * If the device is not broadcasting this information
-     * 0 is set.
+     * 0 is set. <br>
      *
      * Sets the txpower the beacon is transmitting with, found at byte
-     * 31 in the advertisment packet.
+     * 30 in the advertisment packet.
      *
      * @param sRecord Byte array with the advertisment packet from the beacon.
      */
@@ -147,6 +147,14 @@ public class Beacon {
             this.signalLevel = 0xff;
     }
 
+    /**
+     * Returns the updates variable. <br>
+     *
+     * Used to prevent updating beacons multiple times per scan
+     * interval.
+     *
+     * @return
+     */
     public boolean getUpdated() {
         return this.updated;
     }
@@ -177,7 +185,7 @@ public class Beacon {
     /**
      * Returns the ID (MAC address) of the beacon.
      *
-     * @return a String in xx:yy:xx:yy:xx:yy format with the mac
+     * @return A String in xx:yy:xx:yy:xx:yy format with the mac
      * address of the beacon.
      */
     public String getAddress() {
@@ -187,7 +195,7 @@ public class Beacon {
     /**
      * Returns the name of the beacon.
      *
-     * @return a String in with the name of the beacon
+     * @return A String in with the name of the beacon
      */
     public String getName() {
         return this.name;
@@ -232,7 +240,7 @@ public class Beacon {
     /**
      * Gets the estimated distance from the beacon based on the
      * beacons advertised signal level at 1m and the rssi registered
-     * on the device.
+     * on the device. <br>
      *
      * If it is not possible to range estimate the device, infinity
      * is returned.
