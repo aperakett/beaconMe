@@ -2,9 +2,6 @@ package no.uit.ods.beaconme;
 
 /**
  * Created by Dani on 02.03.2015.
- *
- * This class sets up the category list, it gets the category from the back-end system if it can, if not
- * it uses a local backup from disk
  */
 
 import android.app.AlertDialog;
@@ -19,6 +16,7 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -29,12 +27,17 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.util.ArrayList;
 
-
+/**
+ * This class sets up the category list, it gets the category from the back-end system if it can, if not
+ * it uses a local backup from disk
+ */
 public class BeaconCategory extends ActionBarActivity implements View.OnClickListener {
     Button button;
     ListView lv;
     ArrayAdapter<String> catAdapter;
     private BeaconScannerService cService;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,8 +63,13 @@ public class BeaconCategory extends ActionBarActivity implements View.OnClickLis
         button.setOnClickListener(this);
     }
 
-    // This method gets a JSONArray of categories from the back-end system and converts it to
-    // a string array, it also saves the array on disk for backup or uses the backup if fail
+    /**
+     *
+     * This method gets a JSONArray of categories from the back-end system and converts it to
+     * a string array, it also saves the array on disk for backup or uses the backup if fail
+     *
+     * @return array with categories in String format
+     */
     private ArrayList getCategories() {
         String tempJSON;
         String filename = "SavedCat.sav";
@@ -116,7 +124,13 @@ public class BeaconCategory extends ActionBarActivity implements View.OnClickLis
         return catList;
     }
 
-    // Saves a string in a file on disk
+    /**
+     *
+     * Saves a string in a file on disk.
+     *
+     * @param array The array to read from.
+     * @param filename The filename we want to save to.
+     */
     public void saveToDisk(String array, String filename) {
         File f = new File(getApplicationContext().getFilesDir() + filename);
         try {
@@ -134,7 +148,12 @@ public class BeaconCategory extends ActionBarActivity implements View.OnClickLis
         }
     }
 
-    // Reads from disk and returns a char[] buffer
+    /**
+     * Reads from disk and returns a char[] buffer
+     *
+     * @param filename The filename to read from.
+     * @return The string read from file.
+     */
     public char[] readFromDisk(String filename) {
         char[] buffer = null;
         // Read the local file to get the "backup" array
@@ -169,6 +188,14 @@ public class BeaconCategory extends ActionBarActivity implements View.OnClickLis
         button = (Button) findViewById(R.id.applyButton);
     }
 
+    /**
+     * This method saves the categories clicked in an array
+     * it then creates an intent and a bundle that is used to pass data between activities.
+     *
+     * The BeaconFilter class is called from this method.
+     *
+     * @param view
+     */
     public void onClick(View view) {
         SparseBooleanArray checked = lv.getCheckedItemPositions();
         ArrayList<String> checkedItems = new ArrayList<>();
@@ -200,7 +227,7 @@ public class BeaconCategory extends ActionBarActivity implements View.OnClickLis
         b.putBinder("binderScan", cService.getBinder());
         intent.putExtras(b);
 
-        // Use the intent to start the OutputActivity class
+        // Use the intent to start the Filter class
         startActivity(intent, b);
     }
 }

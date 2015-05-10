@@ -116,6 +116,7 @@ public class BeaconAssociationList {
             json.remove("name");
             json.put("name", name);
             json.remove("notify");
+            json.put("notify", notify);
         }
     }
 
@@ -231,7 +232,7 @@ public class BeaconAssociationList {
         return beaconNum;
     }
 
-    public void notify (Beacon beacon, Context context) throws JSONException {
+    public boolean notify (Beacon beacon) throws JSONException {
         int idx = contains(beacon);
         if (idx != -1) {
             JSONObject ass = ((JSONObject) this.associations.get(idx));
@@ -240,12 +241,16 @@ public class BeaconAssociationList {
             double distance = beacon.getDistance();
             if (notify == 1 && distance < 1.0) {
                 Log.e("NOTIFICATION", "NEAR distance: " + String.format("%.2f", distance));
+                return true;
             } else if (notify == 2 && distance < 15.0) {
                 Log.e("NOTIFICATION", "MID distance: " + String.format("%.2f", distance));
+                return true;
             } else if (notify == 3) {
                 Log.e("NOTIFICATION", "FAR distance: " + String.format("%.2f", distance));
+                return true;
             }
 
+/*
             if (notify != 0) {
                 Intent intent = new Intent(context.getApplicationContext(), MainActivity.class);
                 PendingIntent pIntent = PendingIntent.getActivity(context, 0, intent, 0);
@@ -268,8 +273,9 @@ public class BeaconAssociationList {
                 }
                 Log.e("BLABLABLA", "notifying.....");
             }
+*/
         }
-
+        return false;
     }
 
     /**

@@ -19,10 +19,4 @@
         android:orderInCategory="100"
         app:showAsAction="never"/>
 
-    <item
-        android:id="@+id/action_categories"
-        android:title="@string/cat"
-        android:orderInCategory="100"
-        app:showAsAction="never"/>
-
 </menu>

@@ -294,12 +294,12 @@ public class BeaconScannerService extends Service {
                         @Override
                         public void run() {
                             btleDeviceList.addDevice(beacon);
-                            // TODO, clean up the beacon notification
+                       /*     // TODO, clean up the beacon notification
                             try {
                                 associationList.notify(beacon, getBaseContext());
                             } catch (JSONException e) {
                                 e.printStackTrace();
-                            }
+                            }*/
                         }
                     });
 

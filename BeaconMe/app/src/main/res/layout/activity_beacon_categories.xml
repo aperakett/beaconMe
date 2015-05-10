@@ -21,7 +21,7 @@ android:orientation="vertical" >
             android:id="@+id/header1"
             android:layout_width="fill_parent"
             android:layout_height="@dimen/device_list_headline_font_size"
-            android:text="@string/selected_text"
+            android:text="Select your categories:"
             android:textColor="@android:color/black"
             android:textSize="12sp"
             android:background="@color/highlighted_text_material_light"
@@ -46,7 +46,10 @@ android:orientation="vertical" >
         android:id="@+id/applyButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:onClick="onClick"
         android:text="@string/apply_button"
         android:background="@android:drawable/dialog_holo_light_frame" />
+
+
 
 </LinearLayout>

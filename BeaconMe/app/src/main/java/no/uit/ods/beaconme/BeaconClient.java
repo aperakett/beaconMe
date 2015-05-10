@@ -33,7 +33,9 @@ import org.json.JSONArray;
  */
 public class BeaconClient {
 
-    private String  serverUrl    = "http://beaconme.ddns.net:3000";
+//    private String  serverUrl    = "http://beaconme.ddns.net:3000";
+    private String  serverUrl    = "http://192.168.1.227:3000";
+//    private String  serverUrl    = "http://192.168.1.20:3000";
     private String  apiKey       = "";
     private int     connTimeOut  = 20000;   // In milliseconds
     private static  BeaconClient instance = null;
